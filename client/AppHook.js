@@ -7,7 +7,9 @@ import {navigate} from "hookrouter";
 export default function App() {
     const [alert, setAlert] = useState({isOpen: false});
     const [isAuth, setAuth] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
     const params = {
+        isLoading,
         isAuth,
         alert,
         setAlert: (response) => {
@@ -19,16 +21,16 @@ export default function App() {
             setAlert({isOpen: false})
         },
 
-        async apiData(path, data) {
+        async api(path, data) {
+            setIsLoading(true);
             const res = await API.postData(path, data);
+            setIsLoading(false);
             if (!res.error) return res;
             this.clearAlert();
-            switch (res.error) {
-                case 401:
-                    //console.error('FETCH ERROR', path);
-                    break;
-                default:
-                    this.setAlert(res);
+            if (res.error) {
+                console.error(res)
+                //res.message += ': ' + path
+                this.setAlert(res);
             }
             return res;
         },

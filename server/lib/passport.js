@@ -1,4 +1,4 @@
-const mongoose = require('server/db/mongoose');
+import Mongoose from "server/db/mongoose";
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const TelegramStrategy = require('passport-custom').Strategy;
@@ -8,7 +8,7 @@ const crypto = require('crypto');
 
 passport.use(new LocalStrategy({passReqToCallback: true},
     function (req, username, password, done) {
-        mongoose.User.findOne({username})
+        Mongoose.User.findOne({username})
             .then(user => {
                 if (!user) {
                     return done(null, false, {error: 'username', message: 'Incorrect username.'});
@@ -28,10 +28,10 @@ passport.use(new LocalStrategy({passReqToCallback: true},
 ));
 
 passport.use('test', new TelegramStrategy(function (req, done) {
-    mongoose.User.findOne({id:14278211})
+    Mongoose.User.findOne({id:14278211})
         .then(user=>{
             if (!user) {
-                mongoose.User.create({id:14278211, first_name:'ABR'})
+                Mongoose.User.create({id:14278211, first_name:'ABR'})
                     .then(user=>done(null, user));
                 //return done({status: 403}, false, {error: 'db', message: 'NO USER'});
             }else{
@@ -43,10 +43,10 @@ passport.use('test', new TelegramStrategy(function (req, done) {
 
 passport.use('telegram', new TelegramStrategy(function (req, done) {
     if (checkSignature(req.body)) {
-        mongoose.User.findOne({id: req.body.id})
+        Mongoose.User.findOne({id: req.body.id})
             .then(user => {
                 if (!user) {
-                    mongoose.User.create(req.body)
+                    Mongoose.User.create(req.body)
                         .then(user=>done(null, user));
                     //return done({status: 403}, false, {error: 'db', message: 'NO USER'});
                 }else{

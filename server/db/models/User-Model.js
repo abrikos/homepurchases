@@ -87,6 +87,6 @@ modelSchema.virtual('referralOut', {
     justOne: false // set true for one-to-one relationship
 });
 
-
-module.exports = mongoose.model("User", modelSchema);
+const User = mongoose.model("User", modelSchema)
+export default User;
 

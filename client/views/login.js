@@ -11,19 +11,19 @@ export default function Login(props) {
     const [botName, setBotName] = useState('');
 
     const handleTelegramResponse = async response => {
-        const res = await props.apiData('/login/telegram', response);
+        const res = await props.api('/login/telegram', response);
         if (res.error) return;
         props.logIn();
     };
 
     const testLogin = async response => {
-        const res = await props.apiData('/login/test', response);
+        const res = await props.api('/login/test', response);
         if (res.error) return;
         props.logIn();
     };
 
     useEffect(() => {
-        props.apiData('/bot-name')
+        props.api('/bot-name')
             .then(res => setBotName(res.botName))
     }, []);
 

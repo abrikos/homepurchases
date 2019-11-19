@@ -1,6 +1,7 @@
+import Mongoose from "server/db/mongoose";
+
 const passportLib = require('server/lib/passport');
 const passport = require('passport');
-const mongoose = require("server/db/mongoose");
 const logger = require('logat');
 const moment = require('moment');
 const to = require('server/lib/to')
@@ -17,7 +18,6 @@ module.exports.controller = function (app) {
 
     app.post('/api/logout', (req, res) => {
         req.session.destroy(function (err) {
-            logger.info(err)
             res.send({ok: 200})
         });
     });
@@ -36,7 +36,7 @@ module.exports.controller = function (app) {
 
 
     app.post('/api/isAuth', passportLib.isLogged, async (req, res) => {
-        //const [error, user] = await to( mongoose.User.findById(req.session.passport.user.id));
+        //const [error, user] = await to( Mongoose.User.findById(req.session.passport.user.id));
         //if (!MinterWallet.checkAddress(user.address)) return res.send({error: 412, message:"No wallet's address", authenticated: true})
         res.send({authenticated: true})
     });
