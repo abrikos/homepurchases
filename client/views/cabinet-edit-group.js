@@ -84,6 +84,7 @@ export default function CabinetEditGroup(props) {
             </Row>
             <Button>{t('Save')}</Button>
         </Form>
+
         <h3>{t('Members')}</h3>
         <table className={'table table-striped'}>
             <thead className="thead-dark">
