@@ -1,43 +1,51 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import AccessDenied from "client/views/access-denied";
 import {t} from "client/components/Translator"
 import CabinetGroups from "client/views/cabinet-groups";
+import MyBreadCrumb from "client/components/MyBreadCrumb";
+import {A} from "hookrouter";
+import {Nav, NavItem} from "reactstrap";
 
 export default function Cabinet(props) {
-
-    const active = 'group';
-    const tabs = {
-        group: {label: t('Groups'), path: 'group', content: CabinetGroups(props)},
-        link: {label: t('Invite link'), path: 'link', content: 'LLLLLLLLL'},
-    };
-    tabs[active].active = true;
-
-
-    function getTabContent(tab) {
-
-    }
-
-    function switchTab(event) {
-        getTabContent(tabs[event.target.id])
-    }
+    if (!props.isAuth) return <AccessDenied/>;
+    const [user, setUser] = useState({});
 
     useEffect(() => {
-        getTabContent(tabs[active])
+        props.api('/cabinet/info')
+            .then(u => setUser(u))
     }, []);
 
-    return props.isAuth ? <div>
-            <ul className="nav nav-tabs" id="myTab" role="tablist">
-                {Object.keys(tabs).map(id => <li className="nav-item" key={id}>
-                    <a className={`nav-link ${!!tabs[id].active && 'active'}`} id={id} data-toggle="tab" href={`#ref-${id}`} role="tab" aria-controls={`ref-${id}`} aria-selected="true" onClick={switchTab}>{tabs[id].label}</a>
-                </li>)}
+    return <div>
+        <MyBreadCrumb items={[
+            {label: t('Cabinet')},
+        ]}/>
 
+        <div className={'row'}>
+            <div className={'col'}>
+                <Nav vertical>
+                    <NavItem>
+                        <A href={'/cabinet/groups'}>{t('My groups')}</A> - <small>{t('Groups for joint purchases where you can include invited users')}</small>
+                    </NavItem>
+                    <NavItem>
+                        <A href={'/cabinet/link'}>{t('Invitation Link')}</A> - <small>{t('Link with which you can invite users')}</small>
+                    </NavItem>
 
-            </ul>
-            <div className="tab-content container" id="myTabContent">
-                {Object.keys(tabs).map(id => <div className={`tab-pane fade ${!!tabs[id].active && 'show active'}`} id={'ref-' + id} role="tabpanel" aria-labelledby={'ref-' + id} key={id}>{tabs[id].content}</div>)}
+                    <NavItem>
+                        <A href={'/cabinet/referrals'}>{t('Referrals')}</A> - <small>{t('Those who accepted my invitation')}</small>
+                    </NavItem>
+
+                    <NavItem>
+                        <A href={'/cabinet/parents'}>{t('Parents')}</A> - <small>{t('Those whose invitation I have used')}</small>
+                    </NavItem>
+
+                </Nav>
+            </div>
+            <div className={'col d-flex justify-content-center align-items-center'}>
+                {user.first_name}
+                {user.photo_url && <img src={user.photo_url} alt={'user logo'} height={30}/>}
             </div>
         </div>
-        : <AccessDenied/>
+    </div>
 
 }
 

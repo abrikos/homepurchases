@@ -2,9 +2,14 @@ import {Button, Col, Form, FormFeedback, FormGroup, Input, Label, Row} from "rea
 import {t} from "client/components/Translator";
 import React, {useEffect, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCheck} from "@fortawesome/free-solid-svg-icons";
+import {faCheck, faCopy, faEdit, faPlus} from "@fortawesome/free-solid-svg-icons";
+import {navigate} from "hookrouter";
+import AccessDenied from "client/views/access-denied";
+import MyBreadCrumb from "client/components/MyBreadCrumb";
 
 export default function CabinetGroups(props) {
+    if(!props.isAuth) return <AccessDenied/>;
+
     const [groupsList, setGroupsList] = useState();
     const [errors, setErrors] = useState([]);
 
@@ -15,19 +20,12 @@ export default function CabinetGroups(props) {
             })
     }
 
-    function handleSubmit(e) {
-        e.preventDefault();
-        const array = Array.from(e.target.elements).filter(f => !!f.name)
-        //.map(f=>{ return {name:f.name, value:f.value}; })
-        const form = {};
-        for (const a of array) {
-            form[a.name] = a.value
-            if(a.name==='name' && !a.value) errors.push(a.name)
-        }
-        if(errors.length) return getGroupsList();
-        //console.log(form)
-        createGroup(form);
-        e.target.reset();
+    function addNewGroup(){
+        props.api('/cabinet/group/create')
+            .then(group => {
+                navigate('/cabinet/group/edit/'+group.id)
+            })
+            .catch(error=>console.error(error))
     }
 
     useEffect(() => {
@@ -45,11 +43,13 @@ export default function CabinetGroups(props) {
                     <tr>
                         <th>{t('Name')}</th>
                         <th>{t('Date')}</th>
+                        <th>{t('Members')}</th>
                     </tr>
                     {res.map(group => <tr key={group.id}>
                         <td><Input defaultValue={group.name} onChange={e=>groupChange(group.id,'name',e.target.value)}/></td>
                         <td>{group.updated}</td>
-                        {/*<td><Button><FontAwesomeIcon icon={faCheck} size={'xs'}/></Button></td>*/}
+                        <td>{group.members.length}</td>
+                        <td><Button onClick={()=>navigate('/cabinet/group/edit/'+group.id)}><FontAwesomeIcon icon={faEdit} size={'xs'}/></Button></td>
                     </tr>)}
                     </tbody>
                 </table>
@@ -62,23 +62,13 @@ export default function CabinetGroups(props) {
     }
 
     return <div>
-        <Form onSubmit={handleSubmit} className={'alert alert-info m-2'}>
-            <Row form>
-                <Col md={6}>
-                    <FormGroup>
-                        <Label for={'groupName'}>{t('Name')}</Label>
-                        <Input name={'name'} id={'groupName'} invalid={errors.includes('name')}/>
-                        <FormFeedback>{t('Required')}</FormFeedback>
-                    </FormGroup>
-                </Col>
-                <Col md={6}>
-
-
-                </Col>
-
-            </Row>
-            <Button>{t('Create new group')}</Button>
-        </Form>
+        <MyBreadCrumb items={[
+            {href:'/cabinet', label:t('Cabinet')},
+            {label:t('My groups')},
+        ]}/>
+        <Button onClick={addNewGroup}>
+            <FontAwesomeIcon icon={faPlus}/>            {t('Add new group')}
+        </Button>
         {groupsList}
     </div>
 }

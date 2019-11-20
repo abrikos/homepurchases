@@ -6,8 +6,10 @@ const Schema = mongoose.Schema;
 
 const modelSchema = new Schema({
         name: {type:String, required: true},
+        description: {type:String},
         //date: {type: Date, default: Date.now},
         user: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: [true, 'User required']},
+        members: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
     },
     {
         timestamps: { createdAt: 'createdAt' },

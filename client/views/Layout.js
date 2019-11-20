@@ -61,7 +61,7 @@ export default function Layout(props) {
         <TopMenu {...rest} items={menuItems}/>
         <Alert {...alert}/>
 
-        <div className={'container'}>
+        <div className={'container py-2'}>
             {isLoading ? <Loader/> : routeResult}
         </div>
         <footer>

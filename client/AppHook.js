@@ -28,9 +28,10 @@ export default function App() {
             if (!res.error) return res;
             this.clearAlert();
             if (res.error) {
-                console.error(res)
-                //res.message += ': ' + path
+                //console.error(res)
+                res.message += ': ' + path
                 this.setAlert(res);
+                throw res;
             }
             return res;
         },

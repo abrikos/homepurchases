@@ -27,8 +27,9 @@ export default function Login(props) {
             .then(res => setBotName(res.botName))
     }, []);
 
-    const responseGoogle = (response) => {
+    const telegramLogin = (response) => {
         console.log(response);
+        //props.logIn('telegram')
     }
 
     return <div>
@@ -40,7 +41,7 @@ export default function Login(props) {
 
                     <Button onClick={() => props.logIn('test')}>Test</Button>
 
-                    {/*<TelegramLogin onAuth={()=>props.logIn('telegram)} botName={botName}/>*/}
+                    {botName && <TelegramLogin botName={botName} {...props}/>}
 
                     {/*<GoogleLogin
                         clientId="986859169011-5ia10srbpfgt71ig1sh33aiv3l961un3.apps.googleusercontent.com"

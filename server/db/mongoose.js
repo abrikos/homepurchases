@@ -1,5 +1,6 @@
-import User from "server/db/models/User-Model";
-import Group from "server/db/models/GroupModel";
+import User from "server/db/models/Model-User";
+import Group from "server/db/models/Model-Group";
+import Referral from "server/db/models/Model-Referral";
 
 const mongoose = require("mongoose");
 // подключение
@@ -19,6 +20,6 @@ export default {
             if (!cookie.length) return false;
             return cookie.indexOf(model.cookieId) !== -1;
         },
-        User, Group
+        User, Group, Referral
 
 };

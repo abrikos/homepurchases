@@ -42,14 +42,20 @@ passport.use('test', new TelegramStrategy(function (req, done) {
 }));
 
 passport.use('telegram', new TelegramStrategy(function (req, done) {
-    if (checkSignature(req.body)) {
-        Mongoose.User.findOne({id: req.body.id})
+    const data = req.query;
+    if (checkSignature(data)) {
+        Mongoose.User.findOne({id: data.id})
             .then(user => {
                 if (!user) {
-                    Mongoose.User.create(req.body)
+                    Mongoose.User.create(data)
                         .then(user=>done(null, user));
                     //return done({status: 403}, false, {error: 'db', message: 'NO USER'});
                 }else{
+                    const {id, ...rest} = data;
+                    for(const field of Object.keys(rest)){
+                        user[field] = rest[field];
+                    }
+                    user.save();
                     done(null, user);
                 }
 
@@ -61,7 +67,8 @@ passport.use('telegram', new TelegramStrategy(function (req, done) {
 
 
 function checkSignature({hash, ...data}) {
-    const TOKEN = process.env.TELE_BOT;
+    console.log(hash, data)
+    const TOKEN = process.env.BOT_TOKEN;
     const secret = crypto.createHash('sha256')
         .update(TOKEN)
         .digest();

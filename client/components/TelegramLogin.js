@@ -7,21 +7,31 @@ export default function TelegramLogin(props){
             alert('Logged in as ' + user.first_name + ' ' + user.last_name + ' (' + user.id + (user.username ? ', @' + user.username : '') + ')');
         }
 </script>*/}
-
-
     const id = 'TelegramLoginButton';
-    const script = document.createElement('script');
-    script.src = 'https://telegram.org/js/telegram-widget.js?2';
-    script.setAttribute('data-telegram-login', props.botName || 'samplebot');
-    script.setAttribute('data-size', 'medium');
-    script.setAttribute('data-request-access',  'write');
-    script.setAttribute('data-userpic', true);
-    script.setAttribute('data-onauth', `${props.onAuth}(user)`);
-    script.async = true;
 
     useEffect(()=>{
-        document.getElementById(id).appendChild(script);
-    }, [])
+        props.api('/site-name')
+            .then(res=>{
+                const script = document.createElement('script');
+                //script.src = 'https://telegram.org/js/telegram-widget.js?2';
+                script.src = 'https://tg.dev/js/telegram-widget.js?3';
+                script.setAttribute('data-telegram-login', props.botName);
+                script.setAttribute('data-size', 'medium');
+                script.setAttribute('data-request-access',  'write');
+                script.setAttribute('data-userpic', true);
+                //script.setAttribute('data-onauth', `telegramAuth(user)`);
+                script.setAttribute('data-auth-url', `${res.site}/api/login/telegram`);
+                script.async = true;
+                document.getElementById(id).appendChild(script);
+            })
 
-    return <div id={id}/>
+    }, []);
+
+    function telegramAuth(user) {
+        console.log(user)
+    }
+
+    return <div id={id} >
+        {/*<iframe src={`https://oauth.tg.dev/embed/${props.botName}?origin=http://buy.abrikos.com&size=large&userpic=false&request_access=read`} width={238} height={40} frameBorder={0}/>*/}
+    </div>
 }
