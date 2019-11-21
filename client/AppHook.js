@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import Layout from "client/views/Layout";
 import API from "client/API";
 import {navigate} from "hookrouter";
@@ -6,11 +6,11 @@ import {navigate} from "hookrouter";
 
 export default function App() {
     const [alert, setAlert] = useState({isOpen: false});
-    const [isAuth, setAuth] = useState(false)
+    const [authenticatedUser, setAuth] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const params = {
         isLoading,
-        isAuth,
+        authenticatedUser,
         alert,
         setAlert: (response) => {
             const color = response.error ? 'danger' : 'success';
@@ -37,8 +37,8 @@ export default function App() {
         },
 
         async checkAuth() {
-            const res = await API.postData('/isAuth');
-            if (!res.error) setAuth(true);
+            const user = await API.postData('/isAuth');
+            if (!user.error) setAuth(user);
         },
 
         logOut: () => {

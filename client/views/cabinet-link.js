@@ -1,14 +1,13 @@
-import {Button, Col, Form, FormFeedback, FormGroup, Input, Label, Popover, PopoverHeader, Row} from "reactstrap";
+import {Popover, PopoverHeader} from "reactstrap";
 import {t} from "client/components/Translator";
 import React, {useEffect, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCheck, faCopy, faEdit} from "@fortawesome/free-solid-svg-icons";
-import {navigate} from "hookrouter";
+import {faCopy} from "@fortawesome/free-solid-svg-icons";
 import AccessDenied from "client/views/access-denied";
 import MyBreadCrumb from "client/components/MyBreadCrumb";
 
 export default function CabinetLink(props) {
-    if(!props.isAuth) return <AccessDenied/>;
+    if(!props.authenticatedUser) return <AccessDenied/>;
     const [link,setLink] = useState('empty');
     const [showPop,setShowPop] = useState(false);
 

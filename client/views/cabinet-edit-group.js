@@ -1,7 +1,6 @@
-import {Breadcrumb, BreadcrumbItem, Button, Col, Form, FormFeedback, FormGroup, Input, Label, Row} from "reactstrap";
+import {Button, Col, Form, FormFeedback, FormGroup, Input, Label, Row} from "reactstrap";
 import {t} from "client/components/Translator";
 import React, {useEffect, useState} from "react";
-import {A, navigate, usePath} from "hookrouter";
 import MyBreadCrumb from "client/components/MyBreadCrumb";
 import AccessDenied from "client/views/access-denied";
 import Loader from "client/components/Loader";
@@ -9,7 +8,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowLeft, faArrowRight} from "@fortawesome/free-solid-svg-icons";
 
 export default function CabinetEditGroup(props) {
-    if (!props.isAuth) return <AccessDenied/>;
+    if (!props.authenticatedUser) return <AccessDenied/>;
 
     const [errors, setErrors] = useState([]);
     const [group, setGroup] = useState({});
@@ -26,7 +25,7 @@ export default function CabinetEditGroup(props) {
         if (errors.length) return getGroup();
         //console.log(form)
         props.api('/cabinet/group/save/' + props.id, form)
-            .then(group => setGroup(group));
+            .then(group => getGroup());
         e.target.reset();
     }
 
@@ -108,10 +107,10 @@ export default function CabinetEditGroup(props) {
             <tr>
                 <th colSpan={3} className={'text-center'}><small>{t('Parents')}</small></th>
             </tr>
-            {group.user.parents && group.user.parents.map((ref, i) => <tr key={i}>
-                <td>{ref.parent.first_name}</td>
-                <td>{!group.members.map(m => m.id).includes(ref.parent.id) && <Button onClick={() => attachToGroup(ref.parent._id)}><FontAwesomeIcon icon={faArrowRight}/></Button>}</td>
-                <td>{group.members.map(m => m.id).includes(ref.parent.id) && <Button onClick={() => detachFromGroup(ref.parent._id)}><FontAwesomeIcon icon={faArrowLeft}/></Button>}</td>
+            {group.user.parents && group.user.parents.map((par, j) => <tr key={j}>
+                <td>{par.parent.first_name}</td>
+                <td>{!group.members.map(m => m.id).includes(par.parent.id) && <Button onClick={() => attachToGroup(par.parent._id)}><FontAwesomeIcon icon={faArrowRight}/></Button>}</td>
+                <td>{group.members.map(m => m.id).includes(par.parent.id) && <Button onClick={() => detachFromGroup(par.parent._id)}><FontAwesomeIcon icon={faArrowLeft}/></Button>}</td>
             </tr>)}
 
             </tbody>

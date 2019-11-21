@@ -1,11 +1,10 @@
-import {Component} from "react";
 import axios from "axios";
 
 
 class API {
 
-    isAuth = async () => {
-        const auth = await this.postData('/isAuth');
+    authenticatedUser = async () => {
+        const auth = await this.postData('/authenticatedUser');
         return auth.authenticated;
     };
 

@@ -23,22 +23,23 @@ module.exports.controller = function (app) {
         return user
     }
 
-    app.post('/api/cabinet/tab/:tab', passportLib.isLogged, (req, res) => {
-
-        switch (req.params.tab) {
-            case 'link':
-                res.send({content: 'TODO LINK'});
-                break;
-            case 'group':
-                Mongoose.Group.find({user: req.session.passport.user})
+    app.post('/api/cabinet/group/list', passportLib.isLogged, (req, res) => {
+        Mongoose.User.findById(req.session.passport.user._id)
+            .catch(error => {
+                logger.error(error);
+                res.sendStatus(403)
+            })
+            .then(user => {
+                const query = {$or: [{user}, {members: {$in: [user]}}]};
+                Mongoose.Group.find(query)
                     .then(groups => {
-                        res.send(groups)
+                        res.send({
+                            default:user.group,
+                            my: groups.filter(g => g.user.toString() === user._id.toString()),
+                            invited: groups.filter(g => g.user.toString() !== user._id.toString()),
+                        })
                     });
-                break;
-            default:
-                res.send({ok: 200})
-        }
-
+            })
     });
 
     app.post('/api/cabinet/referrals', passportLib.isLogged, (req, res) => {
@@ -102,7 +103,7 @@ module.exports.controller = function (app) {
         Mongoose.Group.findOne({_id: req.params.id, user: req.session.passport.user})
             .populate([
                 {path: 'members'},
-                {path: 'user', populate: [{path: 'referrals', populate: ['referral']},{path: 'parents', populate: ['parent']}]},
+                {path: 'user', populate: [{path: 'referrals', populate: ['referral']}, {path: 'parents', populate: ['parent']}]},
             ])
             .then(group => res.send(group))
             .catch(error => res.sendStatus(500))
@@ -139,30 +140,30 @@ module.exports.controller = function (app) {
             })
     });
 
-    app.post('/api/cabinet/user', passportLib.isLogged, (req, res) => {
+    app.post('/api/cabinet/user/update/default-group', passportLib.isLogged, (req, res) => {
         Mongoose.User.findById(req.session.passport.user._id)
-            .populate({path: 'referral', select: Mongoose.User.fieldsAllowed.join(' ')})
-            .select(Mongoose.User.fieldsAllowed.join(' ') + ' username')
+        //.populate({path: 'referral', select: Mongoose.User.fieldsAllowed.join(' ')})
+        //.select(Mongoose.User.fieldsAllowed.join(' ') + ' username')
             .then(user => {
-                if (!user) return res.sendStatus(400)
                 logger.info(user)
-                res.send(user)
-            })
-            .catch(error => res.send({error: 500, message: error.message}))
-    });
+                if (!user) return res.sendStatus(403)
+                Mongoose.Group.findById(req.body.id)
+                    .then(group => {
 
-    app.post('/api/user/save', passportLib.isLogged, (req, res) => {
-        Mongoose.User.findById(req.session.passport.user._id)
-            .select(Mongoose.User.fieldsAllowed)
-            .then(user => {
-                if (!user) return res.sendStatus(400);
-                for (const field of Mongoose.User.fieldsAllowed) {
-                    user[field] = req.body[field];
-                }
-                //if (!Minter.checkAddress(user.address)) return res.send({error:203, message:'Address invalid'});
-                user.save()
-                    .then(r => res.send({ok: 200}))
-                    .catch(error => res.send({error: 500, message: error.message}))
+                        if (!group) return res.sendStatus(200);
+                        user.group = group;
+                        user.save()
+                            .then(() => res.sendStatus(200))
+                            .catch(error => {
+                                logger.error(error.message);
+                                res.sendStatus(500)
+                            })
+                    })
+                    .catch(error => {
+                        logger.error(error.message);
+                        res.sendStatus(500)
+                    })
+
 
             })
             .catch(error => res.send({error: 500, message: error.message}))

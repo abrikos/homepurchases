@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import PropTypes from 'prop-types';
-import {Collapse, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, UncontrolledDropdown,} from "reactstrap";
+import {Collapse, DropdownItem, DropdownMenu, DropdownToggle, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, UncontrolledDropdown,} from "reactstrap";
 import {A, navigate, usePath} from "hookrouter";
 import {t} from "client/components/Translator";
 

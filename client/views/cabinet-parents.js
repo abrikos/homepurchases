@@ -4,7 +4,7 @@ import {t} from "client/components/Translator";
 import MyBreadCrumb from "client/components/MyBreadCrumb";
 
 export default function CabinetParents(props) {
-    if (!props.isAuth) return <AccessDenied/>;
+    if (!props.authenticatedUser) return <AccessDenied/>;
     const [content, setContent] = useState([]);
 
     useEffect(()=>{

@@ -1,41 +1,33 @@
-import {Button, Col, Form, FormFeedback, FormGroup, Input, Label, Row} from "reactstrap";
+import {Button, Input} from "reactstrap";
 import {t} from "client/components/Translator";
 import React, {useEffect, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCheck, faCopy, faEdit, faPlus} from "@fortawesome/free-solid-svg-icons";
+import {faEdit, faPlus} from "@fortawesome/free-solid-svg-icons";
 import {navigate} from "hookrouter";
 import AccessDenied from "client/views/access-denied";
 import MyBreadCrumb from "client/components/MyBreadCrumb";
 
 export default function CabinetGroups(props) {
-    if(!props.isAuth) return <AccessDenied/>;
-
+    if (!props.authenticatedUser) return <AccessDenied/>;
     const [groupsList, setGroupsList] = useState();
-    const [errors, setErrors] = useState([]);
 
-    function createGroup(form) {
-        props.api('/cabinet/group/create', form)
-            .then(group => {
-                getGroupsList()
-            })
-    }
-
-    function addNewGroup(){
+    function addNewGroup() {
         props.api('/cabinet/group/create')
             .then(group => {
-                navigate('/cabinet/group/edit/'+group.id)
+                navigate('/cabinet/group/edit/' + group.id)
             })
-            .catch(error=>console.error(error))
+            .catch(error => console.error(error))
     }
 
     useEffect(() => {
         getGroupsList()
-    }, [errors])
+    }, [])
 
     function getGroupsList() {
-        props.api(`/cabinet/tab/group`)
+        props.api(`/cabinet/group/list`)
             .then(res => {
                 let content;
+                console.log(res)
                 if (res.error) return;
 
                 content = <table className={'table'}>
@@ -45,11 +37,11 @@ export default function CabinetGroups(props) {
                         <th>{t('Date')}</th>
                         <th>{t('Members')}</th>
                     </tr>
-                    {res.map(group => <tr key={group.id}>
-                        <td><Input defaultValue={group.name} onChange={e=>groupChange(group.id,'name',e.target.value)}/></td>
+                    {res[props.type].map(group => <tr key={group.id}>
+                        <td>{props.type === 'my' ? <Input defaultValue={group.name} onChange={e => groupChange(group.id, 'name', e.target.value)}/> : <span>{group.name}</span>}</td>
                         <td>{group.updated}</td>
                         <td>{group.members.length}</td>
-                        <td><Button onClick={()=>navigate('/cabinet/group/edit/'+group.id)}><FontAwesomeIcon icon={faEdit} size={'xs'}/></Button></td>
+                        <td><Button onClick={() => navigate('/cabinet/group/edit/' + group.id)}><FontAwesomeIcon icon={faEdit} size={'xs'}/></Button></td>
                     </tr>)}
                     </tbody>
                 </table>
@@ -57,18 +49,18 @@ export default function CabinetGroups(props) {
             })
     }
 
-    function groupChange(id, field, value){
-        props.api('/cabinet/group/update/'+id, {field,value})
+    function groupChange(id, field, value) {
+        props.api('/cabinet/group/update/' + id, {field, value})
     }
 
     return <div>
         <MyBreadCrumb items={[
-            {href:'/cabinet', label:t('Cabinet')},
-            {label:t('My groups')},
+            {href: '/cabinet', label: t('Cabinet')},
+            {label: props.type === 'my' ? t('My groups') : t('In groups')},
         ]}/>
-        <Button onClick={addNewGroup}>
-            <FontAwesomeIcon icon={faPlus}/>            {t('Add new group')}
-        </Button>
+        {props.type === 'my' && <Button onClick={addNewGroup}>
+            <FontAwesomeIcon icon={faPlus}/> {t('Add new group')}
+        </Button>}
         {groupsList}
     </div>
 }

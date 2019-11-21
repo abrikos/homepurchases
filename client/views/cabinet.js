@@ -1,13 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import AccessDenied from "client/views/access-denied";
 import {t} from "client/components/Translator"
-import CabinetGroups from "client/views/cabinet-groups";
 import MyBreadCrumb from "client/components/MyBreadCrumb";
 import {A} from "hookrouter";
 import {Nav, NavItem} from "reactstrap";
 
 export default function Cabinet(props) {
-    if (!props.isAuth) return <AccessDenied/>;
+    if (!props.authenticatedUser) return <AccessDenied/>;
     const [user, setUser] = useState({});
 
     useEffect(() => {
@@ -24,8 +23,13 @@ export default function Cabinet(props) {
             <div className={'col'}>
                 <Nav vertical>
                     <NavItem>
-                        <A href={'/cabinet/groups'}>{t('My groups')}</A> - <small>{t('Groups for joint purchases where you can include invited users')}</small>
+                        <A href={'/cabinet/groups/my'}>{t('My groups')}</A> - <small>{t('Groups for joint purchases where you can include invited users')}</small>
                     </NavItem>
+
+                    <NavItem>
+                        <A href={'/cabinet/groups/invited'}>{t('In groups')}</A> - <small>{t('Groups where they invited me')}</small>
+                    </NavItem>
+
                     <NavItem>
                         <A href={'/cabinet/link'}>{t('Invitation Link')}</A> - <small>{t('Link with which you can invite users')}</small>
                     </NavItem>

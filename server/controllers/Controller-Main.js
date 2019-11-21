@@ -42,16 +42,16 @@ module.exports.controller = function (app) {
         }
     });
 
-    app.post('/api/site-name', (req, res) => {
-        res.send({site: process.env.SITE})
+    app.post('/api/site-info', (req, res) => {
+        res.send({
+            site: process.env.SITE,
+            botName: process.env.BOT_NAME
+        })
     });
 
-    app.post('/api/bot-name', (req, res) => {
-        res.send({botName: process.env.BOT_NAME})
-    });
 
-    app.get('/api/login/telegram', passport.authenticate('telegram'), (req, res) => {
-        if (Mongoose.Types.ObjectId.isValid(req.cookie.parentUser)) {
+    app.get('/api/login/telegram', passport.authenticate('telegram'), async (req, res) => {
+        if (req.cookie && Mongoose.Types.ObjectId.isValid(req.cookie.parentUser)) {
             Mongoose.User.findById(req.cookie.parentUser)
                 .then(parent => {
                     const query = {referral: req.session.passport.user, parent};
@@ -75,7 +75,13 @@ module.exports.controller = function (app) {
     app.post('/api/isAuth', passportLib.isLogged, async (req, res) => {
         //const [error, user] = await to( Mongoose.User.findById(req.session.passport.user.id));
         //if (!MinterWallet.checkAddress(user.address)) return res.send({error: 412, message:"No wallet's address", authenticated: true})
-        res.send({authenticated: true})
+        Mongoose.User.findById(req.session.passport.user._id)
+            .then(user=>res.send(user))
+            .catch(error=>{
+                logger.error(error.message)
+                res.sendStatus(500)
+            })
+
     });
 
 

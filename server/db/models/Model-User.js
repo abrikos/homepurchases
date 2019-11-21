@@ -3,18 +3,13 @@ import moment from "moment";
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const referralAddressSchema = new Schema({
-    address: {type: String, require: true},
-    network: {type: String, require: true},
-});
-
-
 const modelSchema = new Schema({
         id: {type: Number, unique: true},
         first_name: String,
         username: String,
         photo_url: String,
-        language_code: String
+        language_code: String,
+        group: {type: mongoose.Schema.Types.ObjectId, ref: 'Group'},
     },
     {
         timestamps: {createdAt: 'createdAt'},

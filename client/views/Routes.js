@@ -1,7 +1,6 @@
 import React from "react";
 import Home from "client/views/home";
 import Contacts from "client/views/contacts";
-import Portfolio from "client/views/portfolio";
 import Login from "client/views/login";
 import Cabinet from "client/views/cabinet";
 import CabinetEditGroup from "client/views/cabinet-edit-group";
@@ -16,7 +15,7 @@ export default function Routes(props){
         "/": () => <Home {...props}/>,
         "/login": () => <Login {...props}/>,
         "/cabinet": () => <Cabinet {...props}/>,
-        "/cabinet/groups": () => <CabinetGroups {...props}/>,
+        "/cabinet/groups/:type": ({type}) => <CabinetGroups type={type} {...props}/>,
         "/cabinet/referrals": () => <CabinetReferrals {...props}/>,
         "/cabinet/parents": () => <CabinetParents {...props}/>,
         "/cabinet/link": () => <CabinetLink {...props}/>,
