@@ -22,23 +22,23 @@ export default function Cabinet(props) {
         <div className={'row'}>
             <div className={'col'}>
                 <Nav vertical>
-                    <NavItem>
-                        <A href={'/cabinet/groups/my'}>{t('My groups')}</A> - <small>{t('Groups for joint purchases where you can include invited users')}</small>
-                    </NavItem>
-
-                    <NavItem>
-                        <A href={'/cabinet/groups/invited'}>{t('In groups')}</A> - <small>{t('Groups where they invited me')}</small>
-                    </NavItem>
-
-                    <NavItem>
+                    <NavItem className={'mb-2'}>
                         <A href={'/cabinet/link'}>{t('Invitation Link')}</A> - <small>{t('Link with which you can invite users')}</small>
                     </NavItem>
 
-                    <NavItem>
+                    <NavItem className={'mb-2'}>
+                        <A href={'/cabinet/groups/my'}>{t('My groups')}</A> - <small>{t('Groups where you can include invited users')}</small>
+                    </NavItem>
+
+                    <NavItem className={'mb-2'}>
+                        <A href={'/cabinet/groups/invited'}>{t('In groups')}</A> - <small>{t('Groups where they invited me')}</small>
+                    </NavItem>
+
+                    <NavItem className={'mb-2'}>
                         <A href={'/cabinet/referrals'}>{t('Referrals')}</A> - <small>{t('Those who accepted my invitation')}</small>
                     </NavItem>
 
-                    <NavItem>
+                    <NavItem className={'mb-2'}>
                         <A href={'/cabinet/parents'}>{t('Parents')}</A> - <small>{t('Those whose invitation I have used')}</small>
                     </NavItem>
 

@@ -22,24 +22,27 @@ module.exports.controller = function (app) {
         });
     });
 
+    function addReferral(parent, req){
+        if(parent.referrals.includes(req.session.userId)) return;
+        parent.referrals.push(req.session.userId)
+        parent.save()
+            //.then(console.log)
+            //.catch(console.log)
+    }
+
     app.get('/api/invite/:id', (req, res) => {
-        if (Mongoose.Types.ObjectId.isValid(req.params.id)) {
-            Mongoose.User.findById(req.params.id)
-                .then(parent => {
-                    if (req.session.passport) {
-                        const query = {referral: req.session.passport.user, parent};
-                        Mongoose.Referral.findOne(query)
-                            .then(ref => {
-                                if (ref) return;
-                                Mongoose.Referral.create(query)
-                            });
-                        return res.redirect('/cabinet');
-                    } else {
-                        res.cookie('parentUser', parent.id, {maxAge: 900000, httpOnly: true});
-                        return res.redirect('/login');
-                    }
-                })
-        }
+        if (!Mongoose.Types.ObjectId.isValid(req.params.id)) return res.redirect('/');
+        Mongoose.User.findById(req.params.id)
+            .then(parent => {
+                if (req.session.passport) {
+                    addReferral(parent, req);
+                    res.redirect('/cabinet')
+                } else {
+                    res.cookie('parentUser', parent.id, {maxAge: 900000, httpOnly: true});
+                    return res.redirect('/login');
+                }
+            })
+
     });
 
     app.post('/api/site-info', (req, res) => {
@@ -54,14 +57,7 @@ module.exports.controller = function (app) {
         if (req.cookie && Mongoose.Types.ObjectId.isValid(req.cookie.parentUser)) {
             Mongoose.User.findById(req.cookie.parentUser)
                 .then(parent => {
-                    const query = {referral: req.session.passport.user, parent};
-                    Mongoose.Referral.findOne(query)
-                        .then(ref => {
-                            if (ref) return;
-                            Mongoose.Referral.create(query)
-                        });
-                    return res.redirect('/cabinet');
-
+                    addReferral(parent, req);
                 })
         }
         res.redirect('/cabinet')
@@ -73,11 +69,9 @@ module.exports.controller = function (app) {
 
 
     app.post('/api/isAuth', passportLib.isLogged, async (req, res) => {
-        //const [error, user] = await to( Mongoose.User.findById(req.session.passport.user.id));
-        //if (!MinterWallet.checkAddress(user.address)) return res.send({error: 412, message:"No wallet's address", authenticated: true})
-        Mongoose.User.findById(req.session.passport.user._id)
-            .then(user=>res.send(user))
-            .catch(error=>{
+        Mongoose.User.findById(req.session.userId)
+            .then(user => res.send(user))
+            .catch(error => {
                 logger.error(error.message)
                 res.sendStatus(500)
             })

@@ -8,6 +8,7 @@ import {useRoutes} from "hookrouter";
 import routes from "client/views/Routes";
 import {changeLanguage, t} from "client/components/Translator";
 import Loader from "client/components/Loader";
+import NotFound from "client/views/notfound";
 
 
 export default function Layout(props) {
@@ -37,10 +38,12 @@ export default function Layout(props) {
     }, [isLoading]);
 
 
-    const routeResult = useRoutes(routes(props));
+    let routeResult = useRoutes(routes(props));
     const prevRoute = usePrevious(routeResult);
-    if(prevRoute && prevRoute.type!==routeResult.type){
+    if(routeResult && prevRoute && prevRoute.type!==routeResult.type){
         props.clearAlert()
+    }else{
+        //routeResult = <NotFound/>
     }
 
 

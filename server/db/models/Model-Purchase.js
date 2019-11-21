@@ -3,13 +3,18 @@ import moment from "moment";
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+const goodSchema = new Schema({
+    name: {type:String},
+    quantity: {type:Number},
+    price: {type:Number},
+});
 
 const modelSchema = new Schema({
         name: {type:String, required: true},
         description: {type:String},
         //date: {type: Date, default: Date.now},
-        owner: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: [true, 'Owner required']},
-        members: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
+        group: {type: mongoose.Schema.Types.ObjectId, ref: 'Group', required: [true, 'Group required']},
+        goods: [{type: goodSchema}],
     },
     {
         timestamps: { createdAt: 'createdAt' },
@@ -30,14 +35,6 @@ modelSchema.virtual('updated')
         return moment(this.updatedAt).format('YYYY-MM-DD HH:mm:ss')
     });
 
-modelSchema.virtual('purchases', {
-    ref: 'Purchase',
-    localField: '_id',
-    foreignField: 'group',
-    justOne: false // set true for one-to-one relationship
-});
-
-
-const Group =mongoose.model("Group", modelSchema);
-export default Group
+const Purchase =mongoose.model("Purchase", modelSchema);
+export default Purchase
 

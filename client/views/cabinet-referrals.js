@@ -11,14 +11,13 @@ export default function CabinetReferrals(props) {
         props.api('/cabinet/referrals')
             .then(referrals=>{
 
-                setContent(referrals.map((r,i)=><tr key={i}><td>{r.referral.first_name}</td><td>{r.referral.date}</td></tr>))
+                setContent(referrals.map((r,i)=><tr key={i}><td>{r.first_name}</td><td>{r.date}</td></tr>))
             })
     },[]);
 
     return <div>
         <MyBreadCrumb items={[
             {href:'/cabinet', label:t('Cabinet')},
-            {label:t('Who am I invited to')},
             {label:t('Invited by me')},
         ]}/>
         <table className={'table'}><tbody>

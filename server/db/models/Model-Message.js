@@ -5,14 +5,12 @@ const Schema = mongoose.Schema;
 
 
 const modelSchema = new Schema({
-        name: {type:String, required: true},
-        description: {type:String},
-        //date: {type: Date, default: Date.now},
-        owner: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: [true, 'Owner required']},
-        members: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
+        text: {type: String, required: true},
+        delivered:{type:Boolean, default:false},
+        user: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: [true, 'User required']},
     },
     {
-        timestamps: { createdAt: 'createdAt' },
+        timestamps: {createdAt: 'createdAt'},
         toObject: {virtuals: true},
         // use if your results might be retrieved as JSON
         // see http://stackoverflow.com/q/13133911/488666
@@ -30,14 +28,8 @@ modelSchema.virtual('updated')
         return moment(this.updatedAt).format('YYYY-MM-DD HH:mm:ss')
     });
 
-modelSchema.virtual('purchases', {
-    ref: 'Purchase',
-    localField: '_id',
-    foreignField: 'group',
-    justOne: false // set true for one-to-one relationship
-});
 
 
-const Group =mongoose.model("Group", modelSchema);
-export default Group
+const Message = mongoose.model("Message", modelSchema);
+export default Message
 

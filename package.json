@@ -86,6 +86,7 @@
     "react-jsx-highcharts": "^3.5.0",
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
+    "react-select": "^3.0.8",
     "react-vis": "^1.11.5",
     "react-widgets": "^4.4.8",
     "reactstrap": "^6.5.0",
@@ -142,6 +143,7 @@
     "loopback": "^3.24.0",
     "loopback-boot": "^2.27.1",
     "loopback-component-explorer": "^6.3.1",
+    "riek": "^1.1.0",
     "webpack-cli": "^3.1.2",
     "webpack-merge": "^4.1.4"
   },

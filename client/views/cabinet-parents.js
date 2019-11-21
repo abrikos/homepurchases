@@ -11,7 +11,7 @@ export default function CabinetParents(props) {
         props.api('/cabinet/parents')
             .then(referrals=>{
 
-                setContent(referrals.map((r,i)=><tr key={i}><td>{r.parent.first_name}</td><td>{r.parent.date}</td></tr>))
+                setContent(referrals.map((r,i)=><tr key={i}><td>{r.first_name}</td><td>{r.date}</td></tr>))
             })
     },[]);
 

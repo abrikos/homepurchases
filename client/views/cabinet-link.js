@@ -48,5 +48,6 @@ export default function CabinetLink(props) {
           <PopoverHeader>{t('Copied')}</PopoverHeader>
         </Popover>
         </span>
+        <div className={'alert alert-info'}>{t('If a registered user opens this link, he will become your referral')}</div>
     </div>
 }

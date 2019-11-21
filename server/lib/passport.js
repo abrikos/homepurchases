@@ -1,4 +1,5 @@
 import Mongoose from "server/db/mongoose";
+import moment from "moment";
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const TelegramStrategy = require('passport-custom').Strategy;
@@ -48,7 +49,10 @@ passport.use('telegram', new TelegramStrategy(function (req, done) {
             .then(user => {
                 if (!user) {
                     Mongoose.User.create(data)
-                        .then(user=>done(null, user));
+                        .then(owner=>{
+                            //Mongoose.Purchase.create({name: 'My first group', owner});
+                            done(null, user)
+                        });
                     //return done({status: 403}, false, {error: 'db', message: 'NO USER'});
                 }else{
                     const {id, ...rest} = data;
@@ -99,6 +103,7 @@ module.exports = {
     isLogged: function (req, res, next) {
         if (req.session.passport) {
             //console.log('AUTHENTICATED')
+            req.session.userId = req.session.passport.user._id
             return next()
         } else {
             //hconsole.error('DENIED')

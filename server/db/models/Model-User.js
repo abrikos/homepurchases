@@ -9,7 +9,7 @@ const modelSchema = new Schema({
         username: String,
         photo_url: String,
         language_code: String,
-        group: {type: mongoose.Schema.Types.ObjectId, ref: 'Group'},
+        referrals: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
     },
     {
         timestamps: {createdAt: 'createdAt'},
@@ -25,15 +25,9 @@ modelSchema.virtual('date')
     });
 
 
-modelSchema.virtual('referrals', {
-    ref: 'Referral',
-    localField: '_id',
-    foreignField: 'parent',
-    justOne: false // set true for one-to-one relationship
-});
 
 modelSchema.virtual('parents', {
-    ref: 'Referral',
+    ref: 'User',
     localField: '_id',
     foreignField: 'referral',
     justOne: false // set true for one-to-one relationship

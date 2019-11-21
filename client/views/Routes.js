@@ -19,7 +19,7 @@ export default function Routes(props){
         "/cabinet/referrals": () => <CabinetReferrals {...props}/>,
         "/cabinet/parents": () => <CabinetParents {...props}/>,
         "/cabinet/link": () => <CabinetLink {...props}/>,
-        "/cabinet/group/edit/:id": ({id}) => <CabinetEditGroup id={id} {...props}/>,
+        "/cabinet/group/:id/edit": ({id}) => <CabinetEditGroup id={id} {...props}/>,
         "/contacts": () => <Contacts {...props}/>
     };
 }

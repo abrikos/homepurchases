@@ -3,15 +3,17 @@ import {t} from "client/components/Translator";
 import React, {useEffect, useState} from "react";
 import MyBreadCrumb from "client/components/MyBreadCrumb";
 import AccessDenied from "client/views/access-denied";
-import Loader from "client/components/Loader";
+//import Loader from "client/components/Loader";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowLeft, faArrowRight} from "@fortawesome/free-solid-svg-icons";
+import NotFound from "client/views/notfound";
 
 export default function CabinetEditGroup(props) {
     if (!props.authenticatedUser) return <AccessDenied/>;
 
     const [errors, setErrors] = useState([]);
-    const [group, setGroup] = useState({});
+    const [group, setGroup] = useState();
+    useEffect(getGroup, []);
 
     function handleSubmit(e) {
         e.preventDefault();
@@ -24,63 +26,50 @@ export default function CabinetEditGroup(props) {
         }
         if (errors.length) return getGroup();
         //console.log(form)
-        props.api('/cabinet/group/save/' + props.id, form)
+        props.api(`/group/${props.id}/save/`, form)
             .then(group => getGroup());
         e.target.reset();
     }
 
     function getGroup() {
-        props.api('/cabinet/group/view/' + props.id)
+        props.api(`/group/${props.id}/owner-view`)
             .then(group => {
-                console.log(group)
                 setGroup(group);
             });
     }
 
-    useEffect(() => {
-        getGroup()
-    }, []);
 
     function attachToGroup(id) {
-        props.api(`/cabinet/group/${group.id}/attach/${id}`)
+        props.api(`/group/${group.id}/attach-user/${id}`)
             .then(() => {
                 getGroup()
             })
     }
 
     function detachFromGroup(id) {
-        props.api(`/cabinet/group/${group.id}/detach/${id}`)
+        props.api(`/group/${group.id}/detach-user/${id}`)
             .then(() => {
                 getGroup()
             })
     }
 
-    return group.id ? <div>
+    console.log(group)
+    if(!group) return <div>Loading...</div>
+    return  <div>
         <MyBreadCrumb items={[
             {href: '/cabinet', label: t('Cabinet')},
-            {href: '/cabinet/groups', label: t('My groups')},
+            {href: '/cabinet/groups/my', label: t('My groups')},
             {label: t('Edit group')},
         ]}/>
 
         <Form onSubmit={handleSubmit} className={'alert alert-info'}>
-            <Row form>
-                <Col md={6}>
-                    <FormGroup>
-                        <Label for={'groupName'}>{t('Name')}</Label>
-                        <Input name={'name'} id={'groupName'} invalid={errors.includes('name')} defaultValue={group.name}/>
-                        <FormFeedback>{t('Required')}</FormFeedback>
-                    </FormGroup>
-                </Col>
-                <Col md={6}>
-                    <FormGroup>
-                        <Label for={'groupDescription'}>{t('Description')}</Label>
-                        <Input name={'description'} id={'groupDescription'} invalid={errors.includes('description')} defaultValue={group.description}/>
-                        <FormFeedback>{t('Required')}</FormFeedback>
-                    </FormGroup>
 
-                </Col>
+            <FormGroup>
+                <Label for={'groupName'}>{t('Name')}</Label>
+                <Input name={'name'} id={'groupName'} invalid={errors.includes('name')} defaultValue={group.name}/>
+                <FormFeedback>{t('Required')}</FormFeedback>
+            </FormGroup>
 
-            </Row>
             <Button>{t('Save')}</Button>
         </Form>
 
@@ -97,23 +86,23 @@ export default function CabinetEditGroup(props) {
             <tr>
                 <th colSpan={3} className={'text-center'}><small>{t('Referrals')}</small></th>
             </tr>
-            {group.user.referrals && group.user.referrals.map((ref, i) => <tr key={i}>
-                <td>{ref.referral.first_name}</td>
-                <td>{!group.members.map(m => m.id).includes(ref.referral.id) && <Button onClick={() => attachToGroup(ref.referral._id)}><FontAwesomeIcon icon={faArrowRight}/></Button>}</td>
-                <td>{group.members.map(m => m.id).includes(ref.referral.id) && <Button onClick={() => detachFromGroup(ref.referral._id)}><FontAwesomeIcon icon={faArrowLeft}/></Button>}</td>
+            {group.owner.referrals && group.owner.referrals.map((ref, i) => <tr key={i}>
+                <td>{ref.first_name}</td>
+                <td>{!group.members.map(m => m.id).includes(ref.id) && <Button onClick={() => attachToGroup(ref._id)}><FontAwesomeIcon icon={faArrowRight}/></Button>}</td>
+                <td>{group.members.map(m => m.id).includes(ref.id) && <Button onClick={() => detachFromGroup(ref._id)}><FontAwesomeIcon icon={faArrowLeft}/></Button>}</td>
             </tr>)}
             </tbody>
             <tbody>
             <tr>
                 <th colSpan={3} className={'text-center'}><small>{t('Parents')}</small></th>
             </tr>
-            {group.user.parents && group.user.parents.map((par, j) => <tr key={j}>
-                <td>{par.parent.first_name}</td>
-                <td>{!group.members.map(m => m.id).includes(par.parent.id) && <Button onClick={() => attachToGroup(par.parent._id)}><FontAwesomeIcon icon={faArrowRight}/></Button>}</td>
-                <td>{group.members.map(m => m.id).includes(par.parent.id) && <Button onClick={() => detachFromGroup(par.parent._id)}><FontAwesomeIcon icon={faArrowLeft}/></Button>}</td>
+            {group.owner.parents && group.owner.parents.map((par, j) => <tr key={j}>
+                <td>{par.first_name}</td>
+                <td>{!group.members.map(m => m.id).includes(par.id) && <Button onClick={() => attachToGroup(par._id)}><FontAwesomeIcon icon={faArrowRight}/></Button>}</td>
+                <td>{group.members.map(m => m.id).includes(par.id) && <Button onClick={() => detachFromGroup(par._id)}><FontAwesomeIcon icon={faArrowLeft}/></Button>}</td>
             </tr>)}
 
             </tbody>
         </table>
-    </div> : <Loader/>
+    </div>
 }
