@@ -2,11 +2,12 @@ import {Button, Col, Form, FormFeedback, FormGroup, Input, Label, Row} from "rea
 import {t} from "client/components/Translator";
 import React, {useEffect, useState} from "react";
 import MyBreadCrumb from "client/components/MyBreadCrumb";
-import AccessDenied from "client/views/access-denied";
+import AccessDenied from "client/service/access-denied";
 //import Loader from "client/components/Loader";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowLeft, faArrowRight} from "@fortawesome/free-solid-svg-icons";
-import NotFound from "client/views/notfound";
+import NotFound from "client/service/notfound";
+import Loader from "client/components/Loader";
 
 export default function CabinetEditGroup(props) {
     if (!props.authenticatedUser) return <AccessDenied/>;
@@ -33,9 +34,11 @@ export default function CabinetEditGroup(props) {
 
     function getGroup() {
         props.api(`/group/${props.id}/owner-view`)
+            .catch(error=>props.onError(error))
             .then(group => {
                 setGroup(group);
             });
+
     }
 
 
@@ -53,8 +56,7 @@ export default function CabinetEditGroup(props) {
             })
     }
 
-    console.log(group)
-    if(!group) return <div>Loading...</div>
+    if(!group){ return <Loader/>}
     return  <div>
         <MyBreadCrumb items={[
             {href: '/cabinet', label: t('Cabinet')},

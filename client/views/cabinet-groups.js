@@ -4,7 +4,7 @@ import React, {useEffect, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faEdit, faPlus, faTrash} from "@fortawesome/free-solid-svg-icons";
 import {navigate} from "hookrouter";
-import AccessDenied from "client/views/access-denied";
+import AccessDenied from "client/service/access-denied";
 import MyBreadCrumb from "client/components/MyBreadCrumb";
 import {A} from "hookrouter";
 

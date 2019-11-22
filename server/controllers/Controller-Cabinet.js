@@ -3,6 +3,9 @@ import moment from "moment";
 const passportLib = require('../lib/passport');
 const logger = require('logat');
 
+//Mongoose.User.find().then(console.log)
+//Mongoose.User.updateMany({},{group:null}).then(console.log).catch(console.error)
+
 
 module.exports.controller = function (app) {
 
@@ -30,6 +33,16 @@ module.exports.controller = function (app) {
 
     app.post('/api/cabinet/info', passportLib.isLogged, (req, res) => {
         res.send(req.session.passport.user)
+    });
+
+    app.post('/api/cabinet/update/default-group/:gid', passportLib.isLogged, (req, res) => {
+        if (!Mongoose.Types.ObjectId.isValid(req.params.gid)) return res.sendStatus(400);
+        Mongoose.User.findById(req.session.userId)
+            .then(user=>{
+                user.group = req.params.gid;
+                user.save();
+                res.sendStatus(200)
+            })
     });
 
 

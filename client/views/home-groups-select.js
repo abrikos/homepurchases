@@ -4,12 +4,12 @@ import Loader from "client/components/Loader";
 import Select from "react-select";
 import {A} from "hookrouter";
 
-export default function HomeGroups(props) {
+export default function HomeGroupsSelect(props) {
     const [groups, setGroups] = useState();
 
     useEffect(getGroups, []);
 
-    if (!groups) return <Loader/>;
+
 
     function getGroups() {
         props.api('/group/list/user')
@@ -17,9 +17,9 @@ export default function HomeGroups(props) {
     }
 
     function setDefaultGroup(group) {
-        props.api('/cabinet/user/update/default-group', {id: group.value})
+        props.api('/cabinet/update/default-group/'+ group.value)
             .then(() => {
-                getGroups();
+                //getGroups();
                 props.onChange(group.value);
             })
     }
@@ -29,7 +29,7 @@ export default function HomeGroups(props) {
         return {value: g.id, label: g.name}
     }
 
-    const options = [
+    const options = ()=>[
         {label: t('My groups'), options: groups.my.map(adaptToOption)},
         {label: t('In groups'), options: groups.invited.map(adaptToOption)},
     ];
@@ -41,15 +41,15 @@ export default function HomeGroups(props) {
         </div>
     );
 
-    if(!groups.my.length && !groups.invited.length) return <A href={'/cabinet/groups/my'}>{t('You are not a member of any groups. Create your own or ask your parents to include you in their groups.')}</A>
+    //if(!groups.my.length && !groups.invited.length) return <A href={'/cabinet/groups/my'}>{t('You are not a member of any groups. Create your own or ask your parents to include you in their groups.')}</A>
 
     return <div>
         <strong>{t('Choose group')}:</strong>
-        <Select
+        {groups && <Select
             formatGroupLabel={formatGroupLabel}
             onChange={setDefaultGroup}
             defaultValue={groups.default}
-            options={options}/>
+            options={options()}/>}
     </div>
 
 

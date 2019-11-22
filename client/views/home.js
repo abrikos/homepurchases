@@ -1,16 +1,23 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useReducer, useState} from 'react';
 import Intro from "client/views/intro";
 import {Button} from "reactstrap";
 import {faCog} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {t} from "client/components/Translator"
-import HomeGroups from "client/views/home-groups";
-import PurchaseEdit from "client/views/purchase-edit";
+import HomeGroupsSelect from "client/views/home-groups-select";
+import PurchaseEdit from "client/views/purchase/purchase-edit";
 import Loader from "client/components/Loader";
+import HomePurchasesSelect from "client/views/home-purchases-select";
+import {A} from "hookrouter";
 
 export default function Home(props) {
     if (!props.authenticatedUser) return <Intro {...props}/>;
+    const [group, setGroup] = useState();
     const [purchase, setPurchase] = useState();
+
+    useEffect(() => {
+        if (props.authenticatedUser.group) getGroup(props.authenticatedUser.group)
+    }, [])
 
 
     function modal(props) {
@@ -26,7 +33,6 @@ export default function Home(props) {
                     <div className="modal-body">
 
 
-                        
                     </div>
                     {/*<div className="modal-footer">
                         <Button className="btn-sm" data-dismiss="modal"></Button>
@@ -37,13 +43,42 @@ export default function Home(props) {
         </div>
     }
 
+    function getGroup(gid) {
+        props.api(`/group/${gid}/view`)
+            .then(g => {
+                setGroup(g)
+                console.log(g)
+                if (g.purchases[0]) setPurchase(g.purchases[0])
+            })
+    }
+
+    function createPurchase() {
+        props.api(`/group/${group.id}/purchase/create`)
+            .then(g => setGroup(g))
+    }
+
+    function findPurchase(selected) {
+        props.api(`/purchase/${selected.value}`)
+            .then(setPurchase)
+    }
+
     return <div>
-        <Button data-toggle="modal" data-target="#settingsModal" className={'btn-sm float-right'}>
+        {/*<Button data-toggle="modal" data-target="#settingsModal" className={'btn-sm float-right'}>
             <FontAwesomeIcon icon={faCog}/>
         </Button>
-        {modal(props)}
-        <HomeGroups {...props}/>
-        {purchase && <PurchaseEdit purchase={purchase} {...props}/>}
+        {modal(props)}*/}
+        <HomeGroupsSelect onChange={getGroup} {...props}/>
+        {group && <div>
+
+            {!!group.purchases.length && <div>
+                <HomePurchasesSelect onChangeSelectPurchase={findPurchase} purchase={purchase} group={group} {...props}/>
+                <PurchaseEdit purchase={purchase} onChangePurchase={setPurchase} {...props}/>
+            </div>}
+            <Button onClick={createPurchase} size={'sm'}>{t('Create new purchase in this group')}</Button>
+            <div>{t('Members')}: {group.members.map(m => <span key={m.id}>{m.first_name}</span>)}</div>
+            {group.test}
+            <div><A href={`/cabinet/group/${group.id}/edit`}> {t('Edit group')}</A></div>
+        </div>}
 
     </div>;
 }

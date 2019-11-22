@@ -2,14 +2,19 @@ import React, {useState} from "react";
 import Layout from "client/views/Layout";
 import API from "client/API";
 import {navigate} from "hookrouter";
+import NotFound from "client/service/notfound";
+import AccessDenied from "client/service/access-denied";
+import ServerError from "client/service/server-error";
 
 
 export default function App() {
     const [alert, setAlert] = useState({isOpen: false});
     const [authenticatedUser, setAuth] = useState(false)
-    const [isLoading, setIsLoading] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [errorPage, setErrorPage] = useState(false)
     const params = {
-        isLoading,
+        errorPage,
+        loading,
         authenticatedUser,
         alert,
         setAlert: (response) => {
@@ -22,9 +27,9 @@ export default function App() {
         },
 
         async api(path, data) {
-            setIsLoading(true);
+            //setIsLoading(true);
             const res = await API.postData(path, data);
-            setIsLoading(false);
+            //setIsLoading(false);
             if (!res.error) return res;
             this.clearAlert();
             if (res.error) {
@@ -34,6 +39,18 @@ export default function App() {
                 throw res;
             }
             return res;
+        },
+
+        onError(res){
+            switch(res.error){
+                case 403: setErrorPage(<AccessDenied/>); break;
+                case 404: setErrorPage(<NotFound/>); break;
+                default: setErrorPage(<ServerError {...res}/>); break;
+            }
+        },
+
+        isLoading(on){
+            setLoading(on)
         },
 
         async checkAuth() {

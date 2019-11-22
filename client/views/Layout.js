@@ -8,12 +8,10 @@ import {useRoutes} from "hookrouter";
 import routes from "client/views/Routes";
 import {changeLanguage, t} from "client/components/Translator";
 import Loader from "client/components/Loader";
-import NotFound from "client/views/notfound";
+import NotFound from "client/service/notfound";
 
 
 export default function Layout(props) {
-    const [isLoading, setLoading] = useState(true)
-
     let {children, alert, ...rest} = props;
 
     const menuItems = [
@@ -32,17 +30,17 @@ export default function Layout(props) {
     useEffect(() => {
         props.checkAuth()
             .then(res => {
-                setLoading(false)
+                //setLoading(false)
             })
 
-    }, [isLoading]);
+    }, []);
 
 
     let routeResult = useRoutes(routes(props));
     const prevRoute = usePrevious(routeResult);
-    if(routeResult && prevRoute && prevRoute.type!==routeResult.type){
+    if (routeResult && prevRoute && prevRoute.type !== routeResult.type) {
         props.clearAlert()
-    }else{
+    } else {
         //routeResult = <NotFound/>
     }
 
@@ -65,11 +63,11 @@ export default function Layout(props) {
         <TopMenu {...rest} items={menuItems}/>
         <Alert {...alert}/>
 
-        <div className={'container py-2'}>
-            {isLoading ? <Loader/> : routeResult}
-        </div>
+        {props.loading ? <Loader/> : <div className={'container py-2'}>
+            {props.errorPage || routeResult}
+        </div>}
         <footer>
-            {props.isLoading && <Loader/>}
+
         </footer>
     </div>
 

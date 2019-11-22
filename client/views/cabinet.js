@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import AccessDenied from "client/views/access-denied";
+import AccessDenied from "client/service/access-denied";
 import {t} from "client/components/Translator"
 import MyBreadCrumb from "client/components/MyBreadCrumb";
 import {A} from "hookrouter";

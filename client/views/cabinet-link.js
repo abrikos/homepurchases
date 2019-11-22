@@ -3,7 +3,7 @@ import {t} from "client/components/Translator";
 import React, {useEffect, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCopy} from "@fortawesome/free-solid-svg-icons";
-import AccessDenied from "client/views/access-denied";
+import AccessDenied from "client/service/access-denied";
 import MyBreadCrumb from "client/components/MyBreadCrumb";
 
 export default function CabinetLink(props) {

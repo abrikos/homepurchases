@@ -1,5 +1,6 @@
 import Mongoose from "server/db/mongoose";
 import moment from "moment";
+
 const passportLib = require('../lib/passport');
 const logger = require('logat');
 
@@ -23,58 +24,106 @@ Mongoose.User.create({id: new Date().valueOf(), first_name:'CC cc'})
 
 module.exports.controller = function (app) {
 
-    app.post('/api/group/:pid/save', passportLib.isLogged, (req, res) => {
-        if (!Mongoose.Types.ObjectId.isValid(req.params.pid)) return res.sendStatus(406);
-        Mongoose.User.findById(req.session.userId)
-            .then(owner => {
-                Mongoose.Group.findOne({_id: req.params.pid, owner})
-                    .then(group => {
-                        if (!group) return res.sendStatus(404);
-                        const fields = ['name'];
-                        for (const f of fields) {
-                            group[f] = req.body[f];
-                        }
-                        group.save()
-                            .then(p => res.send(p))
-                            .catch(error => {
-                                logger.error(error.message);
-                                res.sendStatus(500)
-                            });
-                    })
+    app.post('/api/group/:gid/save', passportLib.isLogged, (req, res) => {
+        if (!Mongoose.Types.ObjectId.isValid(req.params.gid)) return res.sendStatus(400);
+        Mongoose.Group.findById(req.params.gid)
+            .catch(error => res.send({error: 500, message: error.message}))
+            .then(group => {
+                if (!group) return res.sendStatus(406);
+                if (group.owner.toString() !== req.session.userId) return res.sendStatus(403)
+                const fields = ['name'];
+                for (const f of fields) {
+                    group[f] = req.body[f];
+                }
+                group.save()
+                    .then(p => res.send(p))
+                    .catch(error => res.send({error: 500, message: error.message}))
             })
+
     });
 
-    app.post('/api/group/:pid/owner-view', passportLib.isLogged, (req, res) => {
-        if (!Mongoose.Types.ObjectId.isValid(req.params.pid)) return res.sendStatus(406);
-        Mongoose.User.findById(req.session.userId)
-            .then(owner => {
-                Mongoose.Group.findOne({_id: req.params.pid, owner})
-                    .populate([
-                        {path: 'owner', populate: ['referrals', 'parents']},
-                        {path: 'members'},
-                    ])
-                    .then(group => {
-                        if (!group) return res.sendStatus(404);
-                        res.send(group)
-                    })
-            })
-    });
-
-
-    async function createGroup(group, user) {
-        const p = await Mongoose.Group.create({group, name: moment().format('YYYY-MM-DD HH:mm:ss')})
-        const text = `Group "${group.name}". New group created by ${user.first_name}. ${process.env.SITE}/group/${p.id}`;
-        Mongoose.Message.create({text, user});
-        for (const user of group.members) {
-            Mongoose.Message.create({text, user});
-        }
-        return p;
+    function checkAccess(group, userId) {
+        const mems = group.members.map(m => (m._id ? m._id : m).toString());
+        mems.push((group.owner._id ? group.owner._id : group.owner).toString());
+        return mems.includes(userId)
     }
+
+    app.post('/api/group/:gid/view', passportLib.isLogged, (req, res) => {
+        if (!Mongoose.Types.ObjectId.isValid(req.params.gid)) return res.sendStatus(400);
+        Mongoose.Group.findById(req.params.gid)
+            .populate([
+                {path: 'members'},
+                {path: 'purchases'},
+            ])
+            .catch(error => res.send({error: 500, message: error.message}))
+            .then(group => {
+                if (!group) return res.sendStatus(406);
+                if (!checkAccess(group, req.session.userId)) return res.sendStatus(403)
+                group.test = 'zzzzzzz'
+                res.send(group)
+            })
+
+    });
+
+    app.post('/api/group/:gid/purchases', passportLib.isLogged, (req, res) => {
+        if (!Mongoose.Types.ObjectId.isValid(req.params.gid)) return res.sendStatus(400);
+        Mongoose.Group.findById(req.params.gid)
+            .populate([
+                {path: 'members'},
+                {path: 'purchases'},
+            ])
+            .catch(error => res.send({error: 500, message: error.message}))
+            .then(group => {
+                if (!group) return res.sendStatus(406);
+                if (!checkAccess(group, req.session.userId)) return res.sendStatus(403)
+                res.send(group.purchases)
+            })
+
+    });
+
+    //Mongoose.Purchase.deleteMany({}).then(console.log).catch(console.error)
+    app.post('/api/group/:gid/purchase/create', passportLib.isLogged, (req, res) => {
+        if (!Mongoose.Types.ObjectId.isValid(req.params.gid)) return res.sendStatus(400);
+        Mongoose.Group.findById(req.params.gid)
+            .populate([
+                {path: 'members'},
+                {path: 'purchases'},
+            ])
+            .catch(error => res.send({error: 500, message: error.message}))
+            .then(group => {
+                if (!group) return res.sendStatus(406);
+                if (!checkAccess(group, req.session.userId)) return res.sendStatus(403)
+                Mongoose.Purchase.create({group, name: moment().format('dddd, DD MMM HH:mm')})
+                    .then(() => {
+                        group.populate('purchases', () => {
+                            res.send(group)
+                        })
+
+                    })
+            })
+    });
+
+    app.post('/api/group/:gid/owner-view', passportLib.isLogged, (req, res) => {
+        if (!Mongoose.Types.ObjectId.isValid(req.params.gid)) return res.sendStatus(400);
+        Mongoose.Group.findById(req.params.gid)
+            .populate([
+                {path: 'owner', populate: ['referrals', 'parents']},
+                {path: 'members'},
+            ])
+            .catch(error => res.send({error: 500, message: error.message}))
+            .then(group => {
+                if (!group) return res.sendStatus(406);
+                if(group.owner._id.toString()!==req.session.userId) return res.sendStatus(403)
+                res.send(group)
+            })
+    });
+
 
     app.post('/api/group/create', passportLib.isLogged, (req, res) => {
         Mongoose.User.findById(req.session.userId)
+            .catch(error => res.send({error: 500, message: error.message}))
             .then(owner => {
-                Mongoose.Group.create({owner, name: moment().format('YYYY-MM-DD HH:mm:ss')})
+                Mongoose.Group.create({owner, name: moment().format('dddd, DD MMM HH:mm')})
                     .catch(error => {
                         res.send({error: 500, message: error.message})
                     })
@@ -84,40 +133,30 @@ module.exports.controller = function (app) {
             })
     });
 
-    app.post('/api/group/last', passportLib.isLogged, (req, res) => {
-        Mongoose.User.findById(req.session.userId)
-            .then(user => {
-                const query = {$or: [{user}, {members: {$in: [user]}}]};
-                Mongoose.Group.find(query)
-                    .sort({createdAt: -1})
-                    .then(ps => {
-                        res.send(ps[0])
-                    });
-
-            })
-    });
-
     app.post('/api/group/list/user', passportLib.isLogged, (req, res) => {
         Mongoose.User.findById(req.session.userId)
             .populate('group')
+            .catch(error => res.send({error: 500, message: error.message}))
             .then(owner => {
-                const query = {$or: [{owner}, {members: {$in: [owner]}}]};
+                const query = {$or: [{owner: req.session.userId}, {members: {$in: req.session.userId}}]};
                 Mongoose.Group.find(query)
                     .sort({createdAt: -1})
                     .then(groups => {
                         res.send({
-                            my: groups.filter(g => g.owner.toString() === owner._id.toString()),
-                            invited: groups.filter(g => g.owner.toString() !== owner._id.toString()),
+                            default: owner.group && {value: owner.group, label: owner.group.name},
+                            my: groups.filter(g => g.owner.toString() === req.session.userId.toString()),
+                            invited: groups.filter(g => g.owner.toString() !== req.session.userId.toString()),
                         })
                     });
             })
+
     });
 
-    app.post('/api/group/:pid/attach-user/:uid', passportLib.isLogged, (req, res) => {
-        if (!Mongoose.Types.ObjectId.isValid(req.params.pid)) return res.sendStatus(406);
-        if (!Mongoose.Types.ObjectId.isValid(req.params.uid)) return res.sendStatus(406);
-        Mongoose.Group.findOne({_id: req.params.pid, owner: req.session.passport.user})
-            .catch(error => res.sendStatus(500))
+    app.post('/api/group/:gid/attach-user/:uid', passportLib.isLogged, (req, res) => {
+        if (!Mongoose.Types.ObjectId.isValid(req.params.gid)) return res.sendStatus(400);
+        if (!Mongoose.Types.ObjectId.isValid(req.params.uid)) return res.sendStatus(400);
+        Mongoose.Group.findOne({_id: req.params.gid, owner: req.session.passport.user})
+            .catch(error => res.send({error: 500, message: error.message}))
             .then(group => {
                 if (!group) return res.send({error: 500, message: 'no group found'});
                 Mongoose.User.findById(req.params.uid)
@@ -135,18 +174,17 @@ module.exports.controller = function (app) {
             })
     });
 
-    app.post('/api/group/:pid/detach-user/:uid', passportLib.isLogged, (req, res) => {
-        if (!Mongoose.Types.ObjectId.isValid(req.params.pid)) return res.sendStatus(406);
-        if (!Mongoose.Types.ObjectId.isValid(req.params.uid)) return res.sendStatus(406);
-        Mongoose.Group.findOne({_id: req.params.pid, owner: req.session.passport.user})
-            .catch(error => res.sendStatus(500))
+    app.post('/api/group/:gid/detach-user/:uid', passportLib.isLogged, (req, res) => {
+        if (!Mongoose.Types.ObjectId.isValid(req.params.gid)) return res.sendStatus(400);
+        if (!Mongoose.Types.ObjectId.isValid(req.params.uid)) return res.sendStatus(400);
+        Mongoose.Group.findOne({_id: req.params.gid, owner: req.session.passport.user})
+            .catch(error => res.send({error: 500, message: error.message}))
             .then(group => {
                 group.members = group.members.filter(m => m.toString() !== req.params.uid)
                 group.save();
                 res.send(group)
             })
     });
-
 
 
 };
