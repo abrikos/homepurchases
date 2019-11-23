@@ -1,5 +1,5 @@
 import React from "react";
-import Home from "client/views/home";
+import Home from "client/views/home/home";
 import Contacts from "client/views/contacts";
 import Login from "client/views/login";
 import Cabinet from "client/views/cabinet";

@@ -2,9 +2,9 @@ import React, {useEffect, useState} from 'react';
 import Intro from "client/views/intro";
 import {Button, Form, Input} from "reactstrap";
 import {t} from "client/components/Translator"
-import GroupsSelect from "client/views/groups-select";
-import PurchaseEdit from "client/views/purchase/purchase-edit";
-import PurchasesSelect from "client/views/purchases-select";
+import GroupsSelect from "client/views/home/groups-select";
+import PurchaseEdit from "client/views/home/purchase-edit";
+import PurchasesSelect from "client/views/home/purchases-select";
 import {A} from "hookrouter";
 
 export default function Home(props) {
@@ -20,25 +20,28 @@ export default function Home(props) {
         props.api('/group/list/user')
             .then(res => {
                 setGroups(res);
+                if (props.purchaseId) {
+                    return findPurchase(props.purchaseId);
+                }
+
                 let groupFound;
                 const index = res.my.map(g => g.id).indexOf(props.authenticatedUser.group);
                 const index2 = res.invited.map(g => g.id).indexOf(props.authenticatedUser.group);
-                if (props.purchaseId) {
-                    findPurchase(props.purchaseId);
-                } else if (index >= 0) {
+                if (index >= 0) {
                     groupFound = res.my[index]
                 } else if (index2 >= 0) {
                     groupFound = res.invited[index2]
                 } else if (res.my.length) {
-                    groupFound = res[res.my[0]]
+                    groupFound = res.my[0]
                 } else if (res.invited.length) {
-                    groupFound = res[res.invited[0]]
-                } else {
-                    setNoGroups(true)
+                    groupFound = res.invited[0]
                 }
-                if(groupFound){
+
+                if (groupFound) {
                     setGroup(groupFound)
                     setPurchase(groupFound.purchases[0])
+                } else {
+                    setNoGroups(true)
                 }
                 //if (g.purchases[0]) setPurchase(g.purchases[0])
             });
@@ -51,7 +54,7 @@ export default function Home(props) {
 
     function createPurchase() {
         props.api(`/group/${group.id}/purchase/create`)
-            .then(g => setGroup(g))
+            .then(p => findPurchase(p.id))
     }
 
     function findPurchase(value) {

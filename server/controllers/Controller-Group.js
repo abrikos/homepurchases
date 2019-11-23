@@ -16,11 +16,6 @@ Mongoose.User.create({id: new Date().valueOf(), first_name:'CC cc'})
 
 */
 
-//Mongoose.User.find()    .then(g=>console.log(g))
-
-//Mongoose.Referral.deleteMany({}).then(console.log)
-//Mongoose.User.deleteMany({id:{$ne:14278211}}).then(console.log)
-//Mongoose.Group.deleteMany({}).then(console.log);Mongoose.Group.deleteMany({}).then(console.log);Mongoose.Message.deleteMany({}).then(console.log);
 
 module.exports.controller = function (app) {
 
@@ -107,12 +102,9 @@ module.exports.controller = function (app) {
             .then(group => {
                 if (!group) return res.sendStatus(406);
                 if (!checkAccess(group, req.session.userId)) return res.sendStatus(403)
-                Mongoose.Purchase.create({group, name: moment().format('dddd, DD MMM HH:mm')})
-                    .then(() => {
-                        group.populate('purchases', () => {
-                            res.send(group)
-                        })
-
+                Mongoose.Purchase.create({group, name: 'Purchase of '+moment().format('dddd, DD MMM HH:mm')})
+                    .then(purchase => {
+                            res.send(purchase)
                     })
             })
     });

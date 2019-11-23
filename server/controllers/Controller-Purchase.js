@@ -2,8 +2,10 @@ import Mongoose from "server/db/mongoose";
 
 const passportLib = require('../lib/passport');
 const logger = require('logat');
-module.exports.controller = function (app) {
 
+//Mongoose.Purchase.deleteMany({}).then(console.log)
+
+module.exports.controller = function (app) {
 
     app.post('/api/purchase/:pid', passportLib.isLogged, (req, res) => {
         if (!Mongoose.Types.ObjectId.isValid(req.params.pid)) return res.sendStatus(400);

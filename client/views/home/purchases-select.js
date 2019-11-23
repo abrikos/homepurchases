@@ -22,7 +22,7 @@ export default function PurchasesSelect(props) {
     }
 
     function adaptToOption(g) {
-        return {value: g.id, label: `${g.name}  (${g.sum})`}
+        return {value: g.id, label: g.name}
     }
 
     const options =()=> [

@@ -4,7 +4,7 @@ import Loader from "client/components/Loader";
 import {t} from "client/components/Translator";
 import {RIEInput} from 'riek'
 import {Button, Col, Form, FormFeedback, FormGroup, Input, Label, Row} from "reactstrap";
-import PurchaseGoodForm from "client/views/purchase/purchase-good-form";
+import PurchaseGoodForm from "client/views/home/purchase-good-form";
 
 export default function PurchaseEdit(props) {
     if (!props.authenticatedUser) return <AccessDenied/>;

@@ -43,6 +43,7 @@ passport.use('test', new TelegramStrategy(function (req, done) {
 }));
 
 passport.use('telegram', new TelegramStrategy(function (req, done) {
+
     const data = req.query;
     if (checkSignature(data)) {
         Mongoose.User.findOne({id: data.id})
@@ -51,7 +52,7 @@ passport.use('telegram', new TelegramStrategy(function (req, done) {
                     Mongoose.User.create(data)
                         .then(owner=>{
                             //Mongoose.Purchase.create({name: 'My first group', owner});
-                            done(null, user)
+                            done(null, owner)
                         });
                     //return done({status: 403}, false, {error: 'db', message: 'NO USER'});
                 }else{
