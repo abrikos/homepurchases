@@ -1,5 +1,4 @@
 import Mongoose from "server/db/mongoose";
-import moment from "moment";
 
 const passportLib = require('../lib/passport');
 const logger = require('logat');
@@ -12,8 +11,8 @@ module.exports.controller = function (app) {
             .populate('group')
             .catch(error => res.send({error: 500, message: error.message}))
             .then(purchase => {
-                if(!purchase) return res.sendStatus(404);
-                if(!checkAccess(purchase, req.session.userId)) return res.sendStatus(403);
+                if (!purchase) return res.sendStatus(404);
+                if (!checkAccess(purchase, req.session.userId)) return res.sendStatus(403);
                 res.send(purchase)
             })
     });
@@ -24,8 +23,8 @@ module.exports.controller = function (app) {
             .populate('group')
             .catch(error => res.send({error: 500, message: error.message}))
             .then(purchase => {
-                if(!purchase) return res.sendStatus(404);
-                if(!checkAccess(purchase, req.session.userId)) return res.sendStatus(403);
+                if (!purchase) return res.sendStatus(404);
+                if (!checkAccess(purchase, req.session.userId)) return res.sendStatus(403);
                 purchase.goods.push(req.body)
                 purchase.save();
                 res.send(purchase)
@@ -38,11 +37,45 @@ module.exports.controller = function (app) {
             .populate('group')
             .catch(error => res.send({error: 500, message: error.message}))
             .then(purchase => {
-                if(!purchase) return res.sendStatus(404);
-                if(!checkAccess(purchase, req.session.userId)) return res.sendStatus(403);
-                purchase.goods[req.params.index] = req.body;
+                if (!purchase) return res.sendStatus(404);
+                if (!checkAccess(purchase, req.session.userId)) return res.sendStatus(403);
+                const found = purchase.goods.id(req.params.index);
+                found.name  =req.body.name;
+                found.quantity  =req.body.quantity;
+                found.price  =req.body.price;
                 purchase.save();
                 res.send(purchase)
+
+            })
+    });
+
+    app.post('/api/purchase/:pid/switch', passportLib.isLogged, (req, res) => {
+        if (!Mongoose.Types.ObjectId.isValid(req.params.pid)) return res.sendStatus(400);
+        Mongoose.Purchase.findById(req.params.pid)
+            .populate('group')
+            .catch(error => res.send({error: 500, message: error.message}))
+            .then(purchase => {
+                if (!purchase) return res.sendStatus(404);
+                if (!checkAccess(purchase, req.session.userId)) return res.sendStatus(403);
+                purchase.closed = !purchase.closed;
+                purchase.save();
+                res.send(purchase)
+
+            })
+    });
+
+    app.post('/api/purchase/:pid/good/:index/delete', passportLib.isLogged, (req, res) => {
+        if (!Mongoose.Types.ObjectId.isValid(req.params.pid)) return res.sendStatus(400);
+        Mongoose.Purchase.findById(req.params.pid)
+            .populate('group')
+            .catch(error => res.send({error: 500, message: error.message}))
+            .then(purchase => {
+                if (!purchase) return res.sendStatus(404);
+                if (!checkAccess(purchase, req.session.userId)) return res.sendStatus(403);
+                purchase.goods.pull({_id:req.params.index});
+                purchase.save();
+                res.send(purchase)
+
             })
     });
 
@@ -58,15 +91,15 @@ module.exports.controller = function (app) {
             .populate('group')
             .catch(error => res.send({error: 500, message: error.message}))
             .then(purchase => {
-                if(!purchase) return res.sendStatus(406);
-                if(!checkAccess(purchase, req.session.userId)) return res.send(403);
+                if (!purchase) return res.sendStatus(406);
+                if (!checkAccess(purchase, req.session.userId)) return res.send(403);
                 const fields = ['name'];
                 for (const f of fields) {
                     purchase[f] = req.body[f];
                 }
                 purchase.save()
                     .catch(error => res.send({error: 500, message: error.message}))
-                    .then(p=>res.send(p))
+                    .then(p => res.send(p))
             })
     });
 

@@ -1,10 +1,12 @@
 import React, {useEffect, useState} from "react";
-import {t} from "client/components/Translator";
+import {t, _} from "client/components/Translator";
 import Loader from "client/components/Loader";
 import Select from "react-select";
 import {A} from "hookrouter";
+import InputSelect from "client/components/InputSelect";
 
-export default function HomeGroupsSelect(props) {
+export default function GroupsSelect(props) {
+/*
     const [groups, setGroups] = useState();
 
     useEffect(getGroups, []);
@@ -15,12 +17,13 @@ export default function HomeGroupsSelect(props) {
         props.api('/group/list/user')
             .then(res => setGroups(res))
     }
+*/
 
-    function setDefaultGroup(group) {
-        props.api('/cabinet/update/default-group/'+ group.value)
+    function setDefaultGroup(value) {
+        props.api('/cabinet/update/default-group/'+ value)
             .then(() => {
                 //getGroups();
-                props.onChange(group.value);
+                props.onChange(value);
             })
     }
 
@@ -30,8 +33,8 @@ export default function HomeGroupsSelect(props) {
     }
 
     const options = ()=>[
-        {label: t('My groups'), options: groups.my.map(adaptToOption)},
-        {label: t('In groups'), options: groups.invited.map(adaptToOption)},
+        {label: _('My groups'), options: props.groups.my.map(adaptToOption), className:'text-primary'},
+        {label: _('In groups'), options: props.groups.invited.map(adaptToOption), className:'text-info'},
     ];
 
     const formatGroupLabel = data => (
@@ -42,14 +45,13 @@ export default function HomeGroupsSelect(props) {
     );
 
     //if(!groups.my.length && !groups.invited.length) return <A href={'/cabinet/groups/my'}>{t('You are not a member of any groups. Create your own or ask your parents to include you in their groups.')}</A>
-
     return <div>
         <strong>{t('Choose group')}:</strong>
-        {groups && <Select
+        <InputSelect
             formatGroupLabel={formatGroupLabel}
             onChange={setDefaultGroup}
-            defaultValue={groups.default}
-            options={options()}/>}
+            defaultValue={props.default.id}
+            options={options()}/>
     </div>
 
 

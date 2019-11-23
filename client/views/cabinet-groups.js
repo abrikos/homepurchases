@@ -2,7 +2,7 @@ import {Button, Input} from "reactstrap";
 import {t} from "client/components/Translator";
 import React, {useEffect, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faEdit, faPlus, faTrash} from "@fortawesome/free-solid-svg-icons";
+import {faEdit, faEye, faPlus, faTrash} from "@fortawesome/free-solid-svg-icons";
 import {navigate} from "hookrouter";
 import AccessDenied from "client/service/access-denied";
 import MyBreadCrumb from "client/components/MyBreadCrumb";
@@ -48,12 +48,16 @@ console.log(groups)
                 {/*<th>{t('Date')}</th>*/}
                 <th>{t('Members')}</th>
                 <th></th>
+                <th></th>
             </tr>
             {groups && groups[props.type].map(group => <tr key={group.id}>
                 <td>{props.type === 'my' ? <Input defaultValue={group.name} onChange={e => groupChange(group.id, 'name', e.target.value)}/> : <span>{group.name}</span>}</td>
                 {/*<td>{group.updated}</td>*/}
                 <td>{group.members.length}</td>
-                <td><A href={`/cabinet/group/${group.id}/edit`}><FontAwesomeIcon icon={faEdit} size={'xs'}/></A></td>
+                <td><A href={`/group/${group.id}`}><FontAwesomeIcon icon={faEye} size={'xs'}/></A></td>
+                <td>
+                    {group.owner.id === props.authenticatedUser.id && <A href={`/cabinet/group/${group.id}/edit`}><FontAwesomeIcon icon={faEdit} size={'xs'}/></A>}
+                </td>
             </tr>)}
             </tbody>
         </table>

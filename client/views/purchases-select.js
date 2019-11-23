@@ -1,17 +1,18 @@
 import React, {useEffect, useState} from "react";
-import {t} from "client/components/Translator";
+import {t, _} from "client/components/Translator";
 import Loader from "client/components/Loader";
 import Select from "react-select";
 import {A} from "hookrouter";
+import InputSelect from "client/components/InputSelect";
 
-export default function HomePurchasesSelect(props) {
+export default function PurchasesSelect(props) {
     const [purchases, setPurchases] = useState();
-    const [purchase, setPurchase] = useState();
+    //const [purchase, setPurchase] = useState();
     useEffect(getPurchases, []);
 
     useEffect(()=>{
         getPurchases()
-        setPurchase(props.purchase)
+        //setPurchase(props.purchase)
     }, [props.purchase, props.group])
 
 
@@ -25,8 +26,8 @@ export default function HomePurchasesSelect(props) {
     }
 
     const options =()=> [
-        {label: t('Open'), options: purchases.filter(p=>!p.closed).map(adaptToOption)},
-        {label: t('Closed'), options: purchases.filter(p=>p.closed).map(adaptToOption)},
+        {label: _('Open'), options: purchases.filter(p=>!p.closed).map(adaptToOption)},
+        {label: _('Closed'), options: purchases.filter(p=>p.closed).map(adaptToOption), className:'text-light bg-secondary'},
     ];
 
     const formatPurchaseLabel = data => (
@@ -39,10 +40,10 @@ export default function HomePurchasesSelect(props) {
 
     return <div>
         <strong>{t('Choose purchase')}:</strong>
-        {purchases && <Select
+        {purchases && <InputSelect
             formatPurchaseLabel={formatPurchaseLabel}
             onChange={props.onChangeSelectPurchase}
-            value={adaptToOption(purchase)}
+            defaultValue={props.default.id}
             options={options()}/>}
 
     </div>

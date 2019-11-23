@@ -4,20 +4,27 @@ import Loader from "client/components/Loader";
 import {t} from "client/components/Translator";
 import {RIEInput} from 'riek'
 import {Button, Col, Form, FormFeedback, FormGroup, Input, Label, Row} from "reactstrap";
-import GoodForm from "client/views/purchase/good-form";
+import PurchaseGoodForm from "client/views/purchase/purchase-good-form";
 
 export default function PurchaseEdit(props) {
     if (!props.authenticatedUser) return <AccessDenied/>;
     const [purchase, setPurchase] = useState();
     const [errors, setErrors] = useState([]);
+    const [name, setName] = useState();
 
     useEffect(() => {
-        setPurchase(props.purchase)
+        updatePurchase(props.purchase)
     }, [props.purchase])
 
     function handlePurchaseUpdated(p) {
-        setPurchase(p);
+        updatePurchase(p)
         props.onChangePurchase(p);
+    }
+
+    function updatePurchase(p) {
+        if(!p) return;
+        setName(p.name)
+        setPurchase(p);
     }
 
     function changeName(e) {
@@ -39,35 +46,39 @@ export default function PurchaseEdit(props) {
             .then(handlePurchaseUpdated)
     }
 
+    function purchaseSwitchClosed() {
+        props.api(`/purchase/${purchase.id}/switch`)
+            .then(handlePurchaseUpdated)
+    }
+
     const protoGood = {name: '', quantity: 0, price: 0, proto: true}
     if (!purchase) return <div/>;
     return <div>
-        <div className={'container alert alert-info purchase-edit'}>
-            <div className={'row'}>
-                <span className={'col-4'}>{t('Name')}</span>
-                <span className={'col-2'}>{t('Quantity')}</span>
-                <span className={'col-2'}>{t('Price')}</span>
-                <span className={'col-2'}>{t('Cost')}</span>
+        <div className={'container alert alert-primary purchase-edit'}>
+            <div className={'row border border-bottom'}>
+                <strong className={'col-4'}>{t('Name')}</strong>
+                <strong className={'col-2'}>{t('Quantity')}</strong>
+                <strong className={'col-2'}>{t('Price')}</strong>
+                <strong className={'col-2'}>{t('Cost')}</strong>
                 <span className={'col-2'}></span>
             </div>
-            <GoodForm purchase={purchase} good={protoGood} onChangeGood={handlePurchaseUpdated} {...props}/>
-            <hr/>
+            {purchase.closed || <PurchaseGoodForm purchase={purchase} good={protoGood} onChangeGood={handlePurchaseUpdated} {...props}/>}
+            {purchase.closed || <hr/>}
             {purchase.goods.map((g, i) => {
                 g.index = i;
                 return g
-            }).reverse().map((g) => <GoodForm key={g._id} purchase={purchase} good={g} onChangeGood={handlePurchaseUpdated} {...props}/>)}
-            <hr/>
+            }).reverse().map((g) => <PurchaseGoodForm key={g._id} purchase={purchase} good={g} onChangeGood={handlePurchaseUpdated} {...props}/>)}
             <div className={'row'}>
-                <span className={'col-8'}>{t('Total')}</span>
-                <span className={'col-2 text-center'}>{purchase.sum}</span>
+                <h3 className={'col-8'}>{t('Total')}</h3>
+                <h3 className={'col-2 text-center'}>{purchase.sum}</h3>
                 <span className={'col-2'}></span>
             </div>
+            <div className={'text-danger'}>{t('Empty rows are deleted')}</div>
             <hr/>
             <Form className={'row'} onSubmit={changeName}>
-
-                <Label for="changeName" className="col-2">{t('Change name')}</Label>
+                <Label for="changeName" className="col-2">{t('Change name of purchase')}</Label>
                 <span className="col-8">
-                <Input name="name" id="changeName"  defaultValue={purchase.name} onFocus={e => e.target.select()} invalid={errors.includes('name')}/>
+                <Input name="name" id="changeName"  value={name} onFocus={e => e.target.select()} invalid={errors.includes('name')} onChange={e=>setName(e.target.value)}/>
                 <FormFeedback>{t('Required')}</FormFeedback>
                 </span>
                 <span className="col-2">
@@ -75,6 +86,7 @@ export default function PurchaseEdit(props) {
                 </span>
 
             </Form>
+            {purchase.closed ? <Button color={'success'} onClick={purchaseSwitchClosed}>{t('Open closed purchase')}</Button>:<Button color={'warning'} onClick={purchaseSwitchClosed}>{t('Close purchase')}</Button>}
         </div>
     </div>
 

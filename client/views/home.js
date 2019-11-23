@@ -1,55 +1,52 @@
-import React, {useEffect, useReducer, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Intro from "client/views/intro";
-import {Button} from "reactstrap";
-import {faCog} from "@fortawesome/free-solid-svg-icons";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {Button, Form, Input} from "reactstrap";
 import {t} from "client/components/Translator"
-import HomeGroupsSelect from "client/views/home-groups-select";
+import GroupsSelect from "client/views/groups-select";
 import PurchaseEdit from "client/views/purchase/purchase-edit";
-import Loader from "client/components/Loader";
-import HomePurchasesSelect from "client/views/home-purchases-select";
+import PurchasesSelect from "client/views/purchases-select";
 import {A} from "hookrouter";
 
 export default function Home(props) {
     if (!props.authenticatedUser) return <Intro {...props}/>;
-    const [group, setGroup] = useState();
     const [purchase, setPurchase] = useState();
+    const [group, setGroup] = useState();
+    const [groups, setGroups] = useState();
+    const [noGroups, setNoGroups] = useState(false);
 
-    useEffect(() => {
-        if (props.authenticatedUser.group) getGroup(props.authenticatedUser.group)
-    }, [])
+    useEffect(getGroups, []);
 
-
-    function modal(props) {
-        return <div className="modal fade" id="settingsModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel4" aria-hidden="true">
-            <div className="modal-dialog modal-dialog-slideout modal-lg" role="document">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h5 className="modal-title" id="exampleModalLabel">{t('Settings')}</h5>
-                        <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">×</span>
-                        </button>
-                    </div>
-                    <div className="modal-body">
-
-
-                    </div>
-                    {/*<div className="modal-footer">
-                        <Button className="btn-sm" data-dismiss="modal"></Button>
-
-                    </div>*/}
-                </div>
-            </div>
-        </div>
+    function getGroups() {
+        props.api('/group/list/user')
+            .then(res => {
+                setGroups(res);
+                let groupFound;
+                const index = res.my.map(g => g.id).indexOf(props.authenticatedUser.group);
+                const index2 = res.invited.map(g => g.id).indexOf(props.authenticatedUser.group);
+                if (props.purchaseId) {
+                    findPurchase(props.purchaseId);
+                } else if (index >= 0) {
+                    groupFound = res.my[index]
+                } else if (index2 >= 0) {
+                    groupFound = res.invited[index2]
+                } else if (res.my.length) {
+                    groupFound = res[res.my[0]]
+                } else if (res.invited.length) {
+                    groupFound = res[res.invited[0]]
+                } else {
+                    setNoGroups(true)
+                }
+                if(groupFound){
+                    setGroup(groupFound)
+                    setPurchase(groupFound.purchases[0])
+                }
+                //if (g.purchases[0]) setPurchase(g.purchases[0])
+            });
     }
 
     function getGroup(gid) {
         props.api(`/group/${gid}/view`)
-            .then(g => {
-                setGroup(g)
-                console.log(g)
-                if (g.purchases[0]) setPurchase(g.purchases[0])
-            })
+            .then(setGroup)
     }
 
     function createPurchase() {
@@ -57,27 +54,45 @@ export default function Home(props) {
             .then(g => setGroup(g))
     }
 
-    function findPurchase(selected) {
-        props.api(`/purchase/${selected.value}`)
-            .then(setPurchase)
+    function findPurchase(value) {
+        props.api(`/purchase/${value}`)
+            .then(p => {
+
+                getGroup(p.group.id)
+                setPurchase(p)
+            })
+    }
+
+
+    function sendMessage(e) {
+        e.preventDefault();
+
+        props.api(`/group/${group.id}/message`, {text: e.target.elements.text.value})
+        e.target.reset()
     }
 
     return <div>
-        {/*<Button data-toggle="modal" data-target="#settingsModal" className={'btn-sm float-right'}>
-            <FontAwesomeIcon icon={faCog}/>
-        </Button>
-        {modal(props)}*/}
-        <HomeGroupsSelect onChange={getGroup} {...props}/>
-        {group && <div>
+        {noGroups && <A href={''}>{t('No groups found. Go to create own group')}</A>}
 
+        {group && <div>
+            <GroupsSelect onChange={getGroup} groups={groups} default={group} {...props}/>
             {!!group.purchases.length && <div>
-                <HomePurchasesSelect onChangeSelectPurchase={findPurchase} purchase={purchase} group={group} {...props}/>
+                <PurchasesSelect onChangeSelectPurchase={findPurchase} default={purchase} group={group} {...props}/>
+                <hr/>
                 <PurchaseEdit purchase={purchase} onChangePurchase={setPurchase} {...props}/>
             </div>}
-            <Button onClick={createPurchase} size={'sm'}>{t('Create new purchase in this group')}</Button>
-            <div>{t('Members')}: {group.members.map(m => <span key={m.id}>{m.first_name}</span>)}</div>
-            {group.test}
-            <div><A href={`/cabinet/group/${group.id}/edit`}> {t('Edit group')}</A></div>
+            <div className={'row'}>
+                <div className={'col text-right'}><Button onClick={createPurchase} size={'sm'}>{t('Create new purchase in group')}</Button></div>
+                <div className={'col text-left'}> {group.name}</div>
+            </div>
+            <hr/>
+            <div><A href={`/cabinet/group/${group.id}/edit`}> {t('Edit group')} {group.name}</A></div>
+            <div>{t('Group members')}: {group.owner.first_name}; {group.members.map(m => m.first_name).join('; ')} </div>
+            <Form onSubmit={sendMessage}>
+                <Input name={'text'}/>
+                <Button>{t('Send message to members')}</Button>
+            </Form>
+
         </div>}
 
     </div>;

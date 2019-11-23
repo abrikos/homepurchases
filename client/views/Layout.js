@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef} from 'react';
 import TopMenu from "client/components/TopMenu";
 //import 'bootstrap/dist/css/bootstrap.css';
 import 'client/views/style/main.sass';
@@ -8,7 +8,6 @@ import {useRoutes} from "hookrouter";
 import routes from "client/views/Routes";
 import {changeLanguage, t} from "client/components/Translator";
 import Loader from "client/components/Loader";
-import NotFound from "client/service/notfound";
 
 
 export default function Layout(props) {

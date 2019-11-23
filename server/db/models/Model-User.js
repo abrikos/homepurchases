@@ -30,7 +30,7 @@ modelSchema.virtual('date')
 modelSchema.virtual('parents', {
     ref: 'User',
     localField: '_id',
-    foreignField: 'referral',
+    foreignField: 'referrals',
     justOne: false // set true for one-to-one relationship
 });
 

@@ -52,6 +52,7 @@ module.exports.controller = function (app) {
         if (!Mongoose.Types.ObjectId.isValid(req.params.gid)) return res.sendStatus(400);
         Mongoose.Group.findById(req.params.gid)
             .populate([
+                {path: 'owner'},
                 {path: 'members'},
                 {path: 'purchases'},
             ])
@@ -59,7 +60,6 @@ module.exports.controller = function (app) {
             .then(group => {
                 if (!group) return res.sendStatus(406);
                 if (!checkAccess(group, req.session.userId)) return res.sendStatus(403)
-                group.test = 'zzzzzzz'
                 res.send(group)
             })
 
@@ -77,6 +77,20 @@ module.exports.controller = function (app) {
                 if (!group) return res.sendStatus(406);
                 if (!checkAccess(group, req.session.userId)) return res.sendStatus(403)
                 res.send(group.purchases)
+            })
+
+    });
+
+    app.post('/api/group/:gid/message', passportLib.isLogged, (req, res) => {
+        if (!Mongoose.Types.ObjectId.isValid(req.params.gid)) return res.sendStatus(400);
+        Mongoose.Group.findById(req.params.gid)
+            .catch(error => res.send({error: 500, message: error.message}))
+            .then(group => {
+                if (!group) return res.sendStatus(406);
+                if (!checkAccess(group, req.session.userId)) return res.sendStatus(403);
+                group.members.push(group.owner)
+                group.members.map(user => Mongoose.Message.create({text: '*' + req.session.passport.user.first_name + '*: ' + req.body.text.substring(0, 50), user}))
+                res.sendStatus(200)
             })
 
     });
@@ -107,13 +121,13 @@ module.exports.controller = function (app) {
         if (!Mongoose.Types.ObjectId.isValid(req.params.gid)) return res.sendStatus(400);
         Mongoose.Group.findById(req.params.gid)
             .populate([
-                {path: 'owner', populate: ['referrals', 'parents']},
+                {path: 'owner', populate: ['referrals','parents']},
                 {path: 'members'},
             ])
             .catch(error => res.send({error: 500, message: error.message}))
             .then(group => {
                 if (!group) return res.sendStatus(406);
-                if(group.owner._id.toString()!==req.session.userId) return res.sendStatus(403)
+                if (group.owner._id.toString() !== req.session.userId) return res.sendStatus(403);
                 res.send(group)
             })
     });
@@ -134,22 +148,16 @@ module.exports.controller = function (app) {
     });
 
     app.post('/api/group/list/user', passportLib.isLogged, (req, res) => {
-        Mongoose.User.findById(req.session.userId)
-            .populate('group')
-            .catch(error => res.send({error: 500, message: error.message}))
-            .then(owner => {
-                const query = {$or: [{owner: req.session.userId}, {members: {$in: req.session.userId}}]};
-                Mongoose.Group.find(query)
-                    .sort({createdAt: -1})
-                    .then(groups => {
-                        res.send({
-                            default: owner.group && {value: owner.group, label: owner.group.name},
-                            my: groups.filter(g => g.owner.toString() === req.session.userId.toString()),
-                            invited: groups.filter(g => g.owner.toString() !== req.session.userId.toString()),
-                        })
-                    });
-            })
-
+        const query = {$or: [{owner: req.session.userId}, {members: {$in: req.session.userId}}]};
+        Mongoose.Group.find(query)
+            .populate(['owner', 'purchases', 'members'])
+            .sort({createdAt: -1})
+            .then(groups => {
+                res.send({
+                    my: groups.filter(g => g.owner._id.toString() === req.session.userId.toString()),
+                    invited: groups.filter(g => g.owner._id.toString() !== req.session.userId.toString()),
+                })
+            });
     });
 
     app.post('/api/group/:gid/attach-user/:uid', passportLib.isLogged, (req, res) => {
