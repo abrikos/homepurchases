@@ -5,7 +5,6 @@ import TelegramLogin from "client/components/TelegramLogin";
 
 export default function Login(props) {
     return <div>
-        <A href={'/cabinet'}>CAB</A>
         <div className={'d-flex justify-content-center'}>
             <div className={'card'}>
                 <div className={'card-header'}>{t('Log in')}</div>
