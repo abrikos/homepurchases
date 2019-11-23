@@ -1,9 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import AccessDenied from "client/service/access-denied";
-import Loader from "client/components/Loader";
 import {t} from "client/components/Translator";
-import {RIEInput} from 'riek'
-import {Button, Col, Form, FormFeedback, FormGroup, Input, Label, Row} from "reactstrap";
+import {Button, Form, FormFeedback, Input, Label} from "reactstrap";
 import PurchaseGoodForm from "client/views/home/purchase-good-form";
 
 export default function PurchaseEdit(props) {
@@ -22,7 +20,7 @@ export default function PurchaseEdit(props) {
     }
 
     function updatePurchase(p) {
-        if(!p) return;
+        if (!p) return;
         setName(p.name)
         setPurchase(p);
     }
@@ -63,7 +61,7 @@ export default function PurchaseEdit(props) {
                 <span className={'col-2'}></span>
             </div>
             {purchase.closed || <PurchaseGoodForm purchase={purchase} good={protoGood} onChangeGood={handlePurchaseUpdated} {...props}/>}
-            {purchase.closed || <hr/>}
+            <div className={'text-danger'}>{t('Empty rows are deleted')}</div>
             {purchase.goods.map((g, i) => {
                 g.index = i;
                 return g
@@ -73,20 +71,31 @@ export default function PurchaseEdit(props) {
                 <h3 className={'col-2 text-center'}>{purchase.sum}</h3>
                 <span className={'col-2'}></span>
             </div>
-            <div className={'text-danger'}>{t('Empty rows are deleted')}</div>
+
+            {purchase.closed ? <Button color={'success'} onClick={purchaseSwitchClosed}>{t('Open closed purchase')}</Button> : <Button color={'warning'} onClick={purchaseSwitchClosed}>{t('Close purchase')}</Button>}
             <hr/>
-            <Form className={'row'} onSubmit={changeName}>
-                <Label for="changeName" className="col-2">{t('Change name of purchase')}</Label>
-                <span className="col-8">
-                <Input name="name" id="changeName"  value={name} onFocus={e => e.target.select()} invalid={errors.includes('name')} onChange={e=>setName(e.target.value)}/>
-                <FormFeedback>{t('Required')}</FormFeedback>
-                </span>
-                <span className="col-2">
-                <Button size={'sm'}>{t('Save')}</Button>
-                </span>
+            <Form onSubmit={changeName}>
+                <div><Label for="changeName">{t('Change name of purchase')}</Label></div>
+                <div>
+
+
+                </div>
+
+
+
+
+                <div className="input-group">
+                    <div className="input-group-prepend">
+                        <Button size={'sm'}>{t('Save')}</Button>
+                    </div>
+                    <Input name="name" id="changeName" value={name} onFocus={e => e.target.select()} invalid={errors.includes('name')} onChange={e => setName(e.target.value)}/>
+                    <FormFeedback>{t('Required')}</FormFeedback>
+
+                </div>
+
 
             </Form>
-            {purchase.closed ? <Button color={'success'} onClick={purchaseSwitchClosed}>{t('Open closed purchase')}</Button>:<Button color={'warning'} onClick={purchaseSwitchClosed}>{t('Close purchase')}</Button>}
+
         </div>
     </div>
 

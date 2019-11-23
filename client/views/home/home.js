@@ -85,11 +85,11 @@ export default function Home(props) {
                 <PurchaseEdit purchase={purchase} onChangePurchase={setPurchase} {...props}/>
             </div>}
             <div className={'row'}>
-                <div className={'col text-right'}><Button onClick={createPurchase} size={'sm'}>{t('Create new purchase in group')}</Button></div>
-                <div className={'col text-left'}> {group.name}</div>
+                <div className={'col-md'}><Button onClick={createPurchase} size={'sm'}>{t('Create new purchase in group')}</Button></div>
+                <div className={'col-md'}> {group.name}</div>
             </div>
             <hr/>
-            <div><A href={`/cabinet/group/${group.id}/edit`}> {t('Edit group')} {group.name}</A></div>
+            <u><A href={`/cabinet/group/${group.id}/edit`}> {t('Edit group')} {group.name}</A></u>
             <div>{t('Group members')}: {group.owner.first_name}; {group.members.map(m => m.first_name).join('; ')} </div>
             <Form onSubmit={sendMessage}>
                 <Input name={'text'}/>
